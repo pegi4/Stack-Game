@@ -1,0 +1,2 @@
+VITE_SUPABASE_URL=your_project_url_here
+VITE_SUPABASE_ANON_KEY=your_anon_key_here
