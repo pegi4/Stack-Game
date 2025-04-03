@@ -8,9 +8,21 @@
     <title>Vite App</title>
   </head>
   <body>
-    <h1 class="text-3xl font-bold underline text-yellow-500">
-      Hello world!
-    </h1>
-    <script type="module" src="/src/main.js"></script>
+    <div id="container">
+      <div id="game"></div>
+      <div id="score">0</div>
+      <div id="instructions">Click (or press the spacebar) to place the block</div>
+      <div class="game-over">
+        <h2>Game Over</h2>
+        <p>You did great, you're the best.</p>
+        <p>Click or spacebar to start again</p>
+      </div>
+      <div class="game-ready">
+        <div id="start-button">Start</div>
+        <div></div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
