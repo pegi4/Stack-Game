@@ -49,55 +49,65 @@ export class Block {
         if (this.state == this.STATES.ACTIVE) {
             this.position[this.workingPlane] = Math.random() > 0.5 ? -this.MOVE_AMOUNT : this.MOVE_AMOUNT;
         }
-        reverseDirection() {
-            this.direction = this.direction > 0 ? this.speed : Math.abs(this.speed);
+    }
+    reverseDirection() {
+        this.direction = this.direction > 0 ? this.speed : Math.abs(this.speed);
+    }
+    place() {
+        this.state = this.STATES.STOPPED;
+        let overlap = this.targetBlock.dimension[this.workingDimension] - Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane]);
+        let blocksToReturn = {
+            plane: this.workingPlane,
+            direction: this.direction
+        };
+        if (this.dimension[this.workingDimension] - overlap < 0.3) {
+            overlap = this.dimension[this.workingDimension];
+            blocksToReturn.bonus = true;
+            this.position.x = this.targetBlock.position.x;
+            this.position.z = this.targetBlock.position.z;
+            this.dimension.width = this.targetBlock.dimension.width;
+            this.dimension.depth = this.targetBlock.dimension.depth;
         }
-        place() {
-            this.state = this.STATES.STOPPED;
-            let overlap = this.targetBlock.dimension[this.workingDimension] - Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane]);
-            let blocksToReturn = {
-                plane: this.workingPlane,
-                direction: this.direction
+        if (overlap > 0) {
+            let choppedDimensions = { width: this.dimension.width, height: this.dimension.height, depth: this.dimension.depth };
+            choppedDimensions[this.workingDimension] -= overlap;
+            this.dimension[this.workingDimension] = overlap;
+            let placedGeometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
+            placedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
+            let placedMesh = new THREE.Mesh(placedGeometry, this.material);
+            let choppedGeometry = new THREE.BoxGeometry(choppedDimensions.width, choppedDimensions.height, choppedDimensions.depth);
+            choppedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(choppedDimensions.width / 2, choppedDimensions.height / 2, choppedDimensions.depth / 2));
+            let choppedMesh = new THREE.Mesh(choppedGeometry, this.material);
+            let choppedPosition = {
+                x: this.position.x,
+                y: this.position.y,
+                z: this.position.z
             };
-            if (this.dimension[this.workingDimension] - overlap < 0.3) {
-                overlap = this.dimension[this.workingDimension];
-                blocksToReturn.bonus = true;
-                this.position.x = this.targetBlock.position.x;
-                this.position.z = this.targetBlock.position.z;
-                this.dimension.width = this.targetBlock.dimension.width;
-                this.dimension.depth = this.targetBlock.dimension.depth;
-            }
-            if (overlap > 0) {
-                let choppedDimensions = { width: this.dimension.width, height: this.dimension.height, depth: this.dimension.depth };
-                choppedDimensions[this.workingDimension] -= overlap;
-                this.dimension[this.workingDimension] = overlap;
-                let placedGeometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
-                placedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
-                let placedMesh = new THREE.Mesh(placedGeometry, this.material);
-                let choppedGeometry = new THREE.BoxGeometry(choppedDimensions.width, choppedDimensions.height, choppedDimensions.depth);
-                choppedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(choppedDimensions.width / 2, choppedDimensions.height / 2, choppedDimensions.depth / 2));
-                let choppedMesh = new THREE.Mesh(choppedGeometry, this.material);
-                let choppedPosition = {
-                    x: this.position.x,
-                    y: this.position.y,
-                    z: this.position.z
-                };
-                if (this.position[this.workingPlane] < this.targetBlock.position[this.workingPlane]) {
-                    this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane];
-                }
-                else {
-                    choppedPosition[this.workingPlane] += overlap;
-                }
-                placedMesh.position.set(this.position.x, this.position.y, this.position.z);
-                choppedMesh.position.set(choppedPosition.x, choppedPosition.y, choppedPosition.z);
-                blocksToReturn.placed = placedMesh;
-                if (!blocksToReturn.bonus)
-                    blocksToReturn.chopped = choppedMesh;
+            if (this.position[this.workingPlane] < this.targetBlock.position[this.workingPlane]) {
+                this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane];
             }
             else {
-                this.state = this.STATES.MISSED;
+                choppedPosition[this.workingPlane] += overlap;
             }
-            this.dimension[this.workingDimension] = overlap;
-            return blocksToReturn;
+            placedMesh.position.set(this.position.x, this.position.y, this.position.z);
+            choppedMesh.position.set(choppedPosition.x, choppedPosition.y, choppedPosition.z);
+            blocksToReturn.placed = placedMesh;
+            if (!blocksToReturn.bonus)
+                blocksToReturn.chopped = choppedMesh;
+        }
+        else {
+            this.state = this.STATES.MISSED;
+        }
+        this.dimension[this.workingDimension] = overlap;
+        return blocksToReturn;
+    }
+    tick() {
+        if (this.state == this.STATES.ACTIVE) {
+            let value = this.position[this.workingPlane];
+            if (value > this.MOVE_AMOUNT || value < -this.MOVE_AMOUNT)
+                this.reverseDirection();
+            this.position[this.workingPlane] += this.direction;
+            this.mesh.position[this.workingPlane] = this.position[this.workingPlane];
         }
     }
+}
