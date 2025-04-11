@@ -42,4 +42,20 @@ export class Stage {
         window.addEventListener('resize', () => this.onResize());
         this.onResize();
     }
+    setCamera(y, speed = 0.3) {
+        gsap.to(this.camera.position, {
+            duration: speed,
+            y: y + 4,
+            ease: "power1.easeInOut"
+        });
+        
+        gsap.to(this.cameraTarget, {
+            duration: speed,
+            y: y,
+            ease: "power1.easeInOut",
+            onUpdate: () => {
+                this.camera.lookAt(this.cameraTarget);
+            }
+        });
+    }
 }
