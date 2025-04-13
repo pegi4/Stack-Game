@@ -41,4 +41,95 @@ export class Game {
             // insta-lose, will figure it out later.
         });
     }
+    startGame() {
+        if (this.state != this.STATES.PLAYING) {
+            this.scoreContainer.innerHTML = '0';
+            this.updateState(this.STATES.PLAYING);
+            this.addBlock();
+        }
+    }
+    restartGame() {
+        this.updateState(this.STATES.RESETTING);
+        let oldBlocks = this.placedBlocks.children;
+        let removeSpeed = 0.2;
+        let delayAmount = 0.02;
+        for (let i = 0; i < oldBlocks.length; i++) {
+            gsap.to(oldBlocks[i].scale, {
+                duration: removeSpeed,
+                x: 0,
+                y: 0,
+                z: 0,
+                delay: (oldBlocks.length - i) * delayAmount,
+                ease: "power1.easeIn",
+                onComplete: () => this.placedBlocks.remove(oldBlocks[i])
+            });
+            gsap.to(oldBlocks[i].rotation, {
+                duration: removeSpeed,
+                y: 0.5,
+                delay: (oldBlocks.length - i) * delayAmount,
+                ease: "power1.easeIn"
+            });
+        }
+        let cameraMoveSpeed = removeSpeed * 2 + (oldBlocks.length * delayAmount);
+        this.stage.setCamera(2, cameraMoveSpeed);
+        this.blocks = this.blocks.slice(0, 1);
+        setTimeout(() => {
+            this.startGame();
+        }, cameraMoveSpeed * 1000);
+    }
+    placeBlock() {
+        let currentBlock = this.blocks[this.blocks.length - 1];
+        let newBlocks = currentBlock.place();
+        this.newBlocks.remove(currentBlock.mesh);
+        if (newBlocks.placed)
+            this.placedBlocks.add(newBlocks.placed);
+        if (newBlocks.chopped) {
+            this.choppedBlocks.add(newBlocks.chopped);
+            let positionParams = {
+                duration: 1,
+                y: '-=30',
+                ease: "power1.easeIn",
+                onComplete: () => this.choppedBlocks.remove(newBlocks.chopped)
+            };
+            let rotateRandomness = 10;
+            let rotationParams = {
+                delay: 0.05,
+                x: newBlocks.plane == 'z' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
+                z: newBlocks.plane == 'x' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
+                y: Math.random() * 0.1,
+            };
+            if (newBlocks.chopped.position[newBlocks.plane] > newBlocks.placed.position[newBlocks.plane]) {
+                positionParams[newBlocks.plane] = '+=' + (40 * Math.abs(newBlocks.direction));
+            }
+            else {
+                positionParams[newBlocks.plane] = '-=' + (40 * Math.abs(newBlocks.direction));
+            }
+            gsap.to(newBlocks.chopped.position, positionParams);
+            gsap.to(newBlocks.chopped.rotation, {
+                duration: 1,
+                ...rotationParams
+            });
+        }
+        this.addBlock();
+    }
+    addBlock() {
+        let lastBlock = this.blocks[this.blocks.length - 1];
+        if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) {
+            return this.endGame();
+        }
+        let newKidOnTheBlock = new Block(lastBlock);
+        this.newBlocks.add(newKidOnTheBlock.mesh);
+        this.blocks.push(newKidOnTheBlock);
+        this.stage.setCamera(this.blocks.length * 2);
+        if (this.blocks.length >= 5)
+            this.instructions.classList.add('hide');
+    }
+    endGame() {
+        this.updateState(this.STATES.ENDED);
+    }
+    tick() {
+        this.blocks[this.blocks.length - 1].tick();
+        this.stage.render();
+        requestAnimationFrame(() => { this.tick(); });
+    }
 }
