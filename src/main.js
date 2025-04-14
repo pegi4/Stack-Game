@@ -1,7 +1,8 @@
 import './style.css';
 import { testConnection } from './utils/supabase';
+import { StartMenu } from './StartMenu';
 
-// Test Supabase connection
+// Test Supabase connection and initialize game
 async function initApp() {
     try {
         const isConnected = await testConnection()
@@ -10,9 +11,20 @@ async function initApp() {
         } else {
             console.error('Failed to connect to Supabase')
         }
+        
+        // Create a temporary game object to pass to StartMenu
+        // You'll replace this with your actual Game class later
+        const tempGame = {
+            startGame: () => console.log('Game started!')
+        };
+        
+        // Initialize the start menu
+        const startMenu = new StartMenu(tempGame);
+        
     } catch (error) {
         console.error('Initialization error:', error)
     }
 }
 
-initApp()
+// Initialize the application
+initApp();
