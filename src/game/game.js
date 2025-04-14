@@ -41,6 +41,25 @@ export class Game {
             // insta-lose, will figure it out later.
         });
     }
+    updateState(newState) {
+        for (let key in this.STATES)
+            this.mainContainer.classList.remove(this.STATES[key]);
+        this.mainContainer.classList.add(newState);
+        this.state = newState;
+    }
+    onAction() {
+        switch (this.state) {
+            case this.STATES.READY:
+                this.startGame();
+                break;
+            case this.STATES.PLAYING:
+                this.placeBlock();
+                break;
+            case this.STATES.ENDED:
+                this.restartGame();
+                // break;
+        }
+    }
     startGame() {
         if (this.state != this.STATES.PLAYING) {
             this.scoreContainer.innerHTML = '0';
