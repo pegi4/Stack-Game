@@ -16,8 +16,10 @@ export class Game {
         this.state = this.STATES.LOADING;
         this.stage = new Stage();
         this.mainContainer = document.getElementById('container');
+        this.scoreContainer = document.getElementById('score');
         this.startButton = document.getElementById('start-button');
         this.instructions = document.getElementById('instructions');
+        this.scoreContainer.innerHTML = '0';
         this.newBlocks = new THREE.Group();
         this.placedBlocks = new THREE.Group();
         this.choppedBlocks = new THREE.Group();
@@ -57,7 +59,7 @@ export class Game {
                 break;
             case this.STATES.ENDED:
                 this.restartGame();
-                // break;
+                break;
         }
     }
     startGame() {
@@ -91,6 +93,8 @@ export class Game {
         }
         let cameraMoveSpeed = removeSpeed * 2 + (oldBlocks.length * delayAmount);
         this.stage.setCamera(2, cameraMoveSpeed);
+        let countdown = { value: this.blocks.length - 1 };
+        gsap.to(countdown, cameraMoveSpeed, { value: 0, onUpdate: () => { this.scoreContainer.innerHTML = String(Math.round(countdown.value)); } });
         this.blocks = this.blocks.slice(0, 1);
         setTimeout(() => {
             this.startGame();
@@ -136,6 +140,7 @@ export class Game {
         if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) {
             return this.endGame();
         }
+        this.scoreContainer.innerHTML = String(this.blocks.length - 1);
         let newKidOnTheBlock = new Block(lastBlock);
         this.newBlocks.add(newKidOnTheBlock.mesh);
         this.blocks.push(newKidOnTheBlock);
