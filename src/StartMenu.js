@@ -98,6 +98,12 @@ export class StartMenu {
         this.container.appendChild(this.instructionsPanel);
     }
 
+    showHighScores() {
+        this.hideMenu();
+        this.highScoresPanel.classList.add('visible');
+        // Supabase scores come in here
+    }
+
     createHighScoresPanel() {
         this.highScoresPanel = document.createElement('div');
         this.highScoresPanel.className = 'panel high-scores-panel';
@@ -107,11 +113,11 @@ export class StartMenu {
         
         const content = document.createElement('div');
         content.innerHTML = `
-            <div class="score-row"><span>PlayerOne</span><span>42</span></div>
-            <div class="score-row"><span>BlockMaster</span><span>37</span></div>
-            <div class="score-row"><span>TowerBuilder</span><span>35</span></div>
-            <div class="score-row"><span>StackChamp</span><span>31</span></div>
-            <div class="score-row"><span>NewPlayer</span><span>28</span></div>
+            <div class="score-row"><span>PlayerOne</span><span>4</span></div>
+            <div class="score-row"><span>BlockMaster</span><span>3</span></div>
+            <div class="score-row"><span>TowerBuilder</span><span>3</span></div>
+            <div class="score-row"><span>StackChamp</span><span>3</span></div>
+            <div class="score-row"><span>NewPlayer</span><span>2</span></div>
         `;
         
         const backButton = document.createElement('div');
