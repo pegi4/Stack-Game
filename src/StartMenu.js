@@ -134,4 +134,55 @@ export class StartMenu {
         this.container.appendChild(this.highScoresPanel);
     }
 
+    showSettings() {
+        this.hideMenu();
+        this.settingsPanel.classList.add('visible');
+    }
+    
+    createSettingsPanel() {
+        this.settingsPanel = document.createElement('div');
+        this.settingsPanel.className = 'panel settings-panel';
+        
+        const title = document.createElement('h2');
+        title.textContent = 'Settings';
+        
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <div class="setting-row">
+                <span>Sound</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Music</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Difficulty</span>
+                <select>
+                    <option>Easy</option>
+                    <option selected>Normal</option>
+                    <option>Hard</option>
+                </select>
+            </div>
+        `;
+        
+        const backButton = document.createElement('div');
+        backButton.textContent = 'Back to Menu';
+        backButton.className = 'back-button';
+        backButton.addEventListener('click', () => {
+            this.settingsPanel.classList.remove('visible');
+            this.showMenu();
+        });
+        
+        this.settingsPanel.appendChild(title);
+        this.settingsPanel.appendChild(content);
+        this.settingsPanel.appendChild(backButton);
+        this.container.appendChild(this.settingsPanel);
+    }
 }
