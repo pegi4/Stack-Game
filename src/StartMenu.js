@@ -37,24 +37,6 @@ export class StartMenu {
         this.createSettingsPanel();
     }
 
-    destroy() {
-        if (this.menuContainer && this.menuContainer.parentNode) {
-            this.menuContainer.parentNode.removeChild(this.menuContainer);
-        }
-        
-        if (this.instructionsPanel && this.instructionsPanel.parentNode) {
-            this.instructionsPanel.parentNode.removeChild(this.instructionsPanel);
-        }
-        
-        if (this.highScoresPanel && this.highScoresPanel.parentNode) {
-            this.highScoresPanel.parentNode.removeChild(this.highScoresPanel);
-        }
-        
-        if (this.settingsPanel && this.settingsPanel.parentNode) {
-            this.settingsPanel.parentNode.removeChild(this.settingsPanel);
-        }
-    }
-
     createMenuOption(text, callback) {
         const option = document.createElement('div');
         option.textContent = text;
@@ -62,6 +44,37 @@ export class StartMenu {
         option.addEventListener('click', callback);
         this.menuContainer.appendChild(option);
         return option;
+    }
+
+    animateMenuIn() {
+        // Animate menu elements in
+        gsap.fromTo(this.title, 
+            { y: -50, opacity: 0 }, 
+            { duration: 0.8, y: 0, opacity: 1, ease: "power2.out" }
+        );
+        
+        const options = this.menuContainer.querySelectorAll('.menu-option');
+        gsap.fromTo(options, 
+            { x: -30, opacity: 0 }, 
+            { 
+                duration: 0.5, 
+                x: 0, 
+                opacity: 1, 
+                stagger: 0.1, 
+                ease: "power2.out",
+                delay: 0.3
+            }
+        );
+    }
+    
+    startGame() {
+        // Hide menu
+        this.hideMenu();
+        
+        // Start the game (using your existing game start method)
+        setTimeout(() => {
+            this.game.startGame();
+        }, 500);
     }
 
     showInstructions() {
@@ -184,5 +197,51 @@ export class StartMenu {
         this.settingsPanel.appendChild(content);
         this.settingsPanel.appendChild(backButton);
         this.container.appendChild(this.settingsPanel);
+    }
+
+    hideMenu() {
+        const options = this.menuContainer.querySelectorAll('.menu-option');
+        gsap.to(options, { 
+            duration: 0.3, 
+            x: -30, 
+            opacity: 0, 
+            stagger: 0.05, 
+            ease: "power2.in" 
+        });
+        
+        gsap.to(this.title, { 
+            duration: 0.5, 
+            y: -50, 
+            opacity: 0, 
+            ease: "power2.in",
+            onComplete: () => {
+                this.menuContainer.style.display = 'none';
+                this.isVisible = false;
+            }
+        });
+    }
+    
+    showMenu() {
+        this.menuContainer.style.display = 'flex';
+        this.isVisible = true;
+        this.animateMenuIn();
+    }
+
+    destroy() {
+        if (this.menuContainer && this.menuContainer.parentNode) {
+            this.menuContainer.parentNode.removeChild(this.menuContainer);
+        }
+        
+        if (this.instructionsPanel && this.instructionsPanel.parentNode) {
+            this.instructionsPanel.parentNode.removeChild(this.instructionsPanel);
+        }
+        
+        if (this.highScoresPanel && this.highScoresPanel.parentNode) {
+            this.highScoresPanel.parentNode.removeChild(this.highScoresPanel);
+        }
+        
+        if (this.settingsPanel && this.settingsPanel.parentNode) {
+            this.settingsPanel.parentNode.removeChild(this.settingsPanel);
+        }
     }
 }
