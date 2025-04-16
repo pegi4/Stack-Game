@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import './menu.css'; // We'll create this file next
+//import './menu.css'; // We'll create this file next
 
 export class StartMenu {
     constructor(game) {
@@ -41,7 +41,11 @@ export class StartMenu {
         const option = document.createElement('div');
         option.textContent = text;
         option.className = 'menu-option';
-        option.addEventListener('click', callback);
+        option.addEventListener('click', (e) => {
+            // Stop the event from propagating to the document
+            e.stopPropagation();
+            callback();
+        });
         this.menuContainer.appendChild(option);
         return option;
     }
@@ -100,7 +104,9 @@ export class StartMenu {
         const backButton = document.createElement('div');
         backButton.textContent = 'Back to Menu';
         backButton.className = 'back-button';
-        backButton.addEventListener('click', () => {
+        backButton.addEventListener('click', (e) => {
+            // Stop the event from propagating to the document
+            e.stopPropagation();
             this.instructionsPanel.classList.remove('visible');
             this.showMenu();
         });
@@ -136,7 +142,9 @@ export class StartMenu {
         const backButton = document.createElement('div');
         backButton.textContent = 'Back to Menu';
         backButton.className = 'back-button';
-        backButton.addEventListener('click', () => {
+        backButton.addEventListener('click', (e) => {
+            // Stop the event from propagating to the document
+            e.stopPropagation();
             this.highScoresPanel.classList.remove('visible');
             this.showMenu();
         });
@@ -188,7 +196,9 @@ export class StartMenu {
         const backButton = document.createElement('div');
         backButton.textContent = 'Back to Menu';
         backButton.className = 'back-button';
-        backButton.addEventListener('click', () => {
+        backButton.addEventListener('click', (e) => {
+            // Stop the event from propagating to the document
+            e.stopPropagation();
             this.settingsPanel.classList.remove('visible');
             this.showMenu();
         });

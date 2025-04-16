@@ -150,6 +150,13 @@ export class Game {
     }
     endGame() {
         this.updateState(this.STATES.ENDED);
+        
+        // Show the menu when the game ends
+        if (window.menu) {
+            setTimeout(() => {
+                window.menu.showMenu();
+            }, 1000);
+        }
     }
     tick() {
         this.blocks[this.blocks.length - 1].tick();
