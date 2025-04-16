@@ -54,4 +54,42 @@ export class StartMenu {
             this.settingsPanel.parentNode.removeChild(this.settingsPanel);
         }
     }
+
+    createMenuOption(text, callback) {
+        const option = document.createElement('div');
+        option.textContent = text;
+        option.className = 'menu-option';
+        option.addEventListener('click', callback);
+        this.menuContainer.appendChild(option);
+        return option;
+    }
+
+    createInstructionsPanel() {
+        this.instructionsPanel = document.createElement('div');
+        this.instructionsPanel.className = 'panel instructions-panel';
+        
+        const title = document.createElement('h2');
+        title.textContent = 'How To Play';
+        
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <p>• Click or press spacebar to place blocks</p>
+            <p>• Try to align each block perfectly</p>
+            <p>• Perfect alignments give bonus points</p>
+            <p>• Game ends when a block completely misses the stack</p>
+        `;
+        
+        const backButton = document.createElement('div');
+        backButton.textContent = 'Back to Menu';
+        backButton.className = 'back-button';
+        backButton.addEventListener('click', () => {
+            this.instructionsPanel.classList.remove('visible');
+            this.showMenu();
+        });
+        
+        this.instructionsPanel.appendChild(title);
+        this.instructionsPanel.appendChild(content);
+        this.instructionsPanel.appendChild(backButton);
+        this.container.appendChild(this.instructionsPanel);
+    }
 }
