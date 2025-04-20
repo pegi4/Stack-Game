@@ -70,13 +70,16 @@ export class StartMenu {
   }
 
   startGame() {
+    // Set isVisible to false immediately to prevent any game actions
+    this.isVisible = false;
+    
     // Hide menu
-    this.hideMenu()
+    this.hideMenu();
 
     // Start the game (using your existing game start method)
     setTimeout(() => {
-      this.game.startGame()
-    }, 500)
+      this.game.startGame();
+    }, 500);
   }
 
   showInstructions() {
