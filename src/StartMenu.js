@@ -21,6 +21,9 @@ export class StartMenu {
     // Create menu options
     this.createMenuOption('Play Game', () => this.startGame())
     this.createMenuOption('How To Play', () => this.showInstructions())
+    this.createMenuOption('Leaderboard', () => this.showLeaderboard())
+    this.createMenuOption('Profile', () => this.showProfile())
+    this.createMenuOption('Shop', () => this.showShop())
     this.createMenuOption('High Scores', () => this.showHighScores())
     this.createMenuOption('Settings', () => this.showSettings())
 
@@ -35,6 +38,15 @@ export class StartMenu {
 
     // Create settings panel (hidden by default)
     this.createSettingsPanel()
+
+    // Create leaderboard panel (hidden by default)
+    this.createLeaderboardPanel()
+
+    // Create profile panel (hidden by default)
+    this.createProfilePanel()
+
+    // Create shop panel (hidden by default)
+    this.createShopPanel()
   }
 
   createMenuOption(text, callback) {
@@ -210,6 +222,133 @@ export class StartMenu {
     this.container.appendChild(this.settingsPanel)
   }
 
+  showLeaderboard() {
+    this.hideMenu()
+    this.leaderboardPanel.classList.add('visible')
+  }
+
+  createLeaderboardPanel() {
+    this.leaderboardPanel = document.createElement('div')
+    this.leaderboardPanel.className = 'panel leaderboard-panel'
+    
+    const title = document.createElement('h2')
+    title.textContent = 'Leaderboard'
+    
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <div class="leaderboard-row"><span>1</span><span>PlayerOne</span><span>42</span></div>
+      <div class="leaderboard-row"><span>2</span><span>BlockMaster</span><span>37</span></div>
+      <div class="leaderboard-row"><span>3</span><span>TowerBuilder</span><span>35</span></div>
+      <div class="leaderboard-row"><span>4</span><span>StackChamp</span><span>31</span></div>
+      <div class="leaderboard-row"><span>5</span><span>NewPlayer</span><span>28</span></div>
+    `
+    
+    const backButton = document.createElement('div')
+    backButton.textContent = 'Back to Menu'
+    backButton.className = 'back-button'
+    backButton.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.leaderboardPanel.classList.remove('visible')
+      this.showMenu()
+    })
+    
+    this.leaderboardPanel.appendChild(title)
+    this.leaderboardPanel.appendChild(content)
+    this.leaderboardPanel.appendChild(backButton)
+    this.container.appendChild(this.leaderboardPanel)
+  }
+
+  showProfile() {
+    this.hideMenu()
+    this.profilePanel.classList.add('visible')
+  }
+
+  createProfilePanel() {
+    this.profilePanel = document.createElement('div')
+    this.profilePanel.className = 'panel profile-panel'
+    
+    const title = document.createElement('h2')
+    title.textContent = 'Profile'
+    
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <div class="profile-info">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-details">
+          <p><strong>Username:</strong> Player123</p>
+          <p><strong>Level:</strong> 5</p>
+          <p><strong>Games Played:</strong> 42</p>
+          <p><strong>High Score:</strong> 37</p>
+        </div>
+      </div>
+    `
+    
+    const backButton = document.createElement('div')
+    backButton.textContent = 'Back to Menu'
+    backButton.className = 'back-button'
+    backButton.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.profilePanel.classList.remove('visible')
+      this.showMenu()
+    })
+    
+    this.profilePanel.appendChild(title)
+    this.profilePanel.appendChild(content)
+    this.profilePanel.appendChild(backButton)
+    this.container.appendChild(this.profilePanel)
+  }
+
+  showShop() {
+    this.hideMenu()
+    this.shopPanel.classList.add('visible')
+  }
+
+  createShopPanel() {
+    this.shopPanel = document.createElement('div')
+    this.shopPanel.className = 'panel shop-panel'
+    
+    const title = document.createElement('h2')
+    title.textContent = 'Shop'
+    
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <div class="shop-items">
+        <div class="shop-item">
+          <div class="item-image">🎨</div>
+          <div class="item-name">Custom Block Color</div>
+          <div class="item-price">100 coins</div>
+          <div class="item-button">Buy</div>
+        </div>
+        <div class="shop-item">
+          <div class="item-image">🎵</div>
+          <div class="item-name">Custom Sound</div>
+          <div class="item-price">200 coins</div>
+          <div class="item-button">Buy</div>
+        </div>
+        <div class="shop-item">
+          <div class="item-image">🌟</div>
+          <div class="item-name">Special Effects</div>
+          <div class="item-price">300 coins</div>
+          <div class="item-button">Buy</div>
+        </div>
+      </div>
+    `
+    
+    const backButton = document.createElement('div')
+    backButton.textContent = 'Back to Menu'
+    backButton.className = 'back-button'
+    backButton.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.shopPanel.classList.remove('visible')
+      this.showMenu()
+    })
+    
+    this.shopPanel.appendChild(title)
+    this.shopPanel.appendChild(content)
+    this.shopPanel.appendChild(backButton)
+    this.container.appendChild(this.shopPanel)
+  }
+
   hideMenu() {
     const options = this.menuContainer.querySelectorAll('.menu-option')
     gsap.to(options, {
@@ -253,6 +392,18 @@ export class StartMenu {
 
     if (this.settingsPanel && this.settingsPanel.parentNode) {
       this.settingsPanel.parentNode.removeChild(this.settingsPanel)
+    }
+
+    if (this.leaderboardPanel && this.leaderboardPanel.parentNode) {
+      this.leaderboardPanel.parentNode.removeChild(this.leaderboardPanel)
+    }
+
+    if (this.profilePanel && this.profilePanel.parentNode) {
+      this.profilePanel.parentNode.removeChild(this.profilePanel)
+    }
+
+    if (this.shopPanel && this.shopPanel.parentNode) {
+      this.shopPanel.parentNode.removeChild(this.shopPanel)
     }
   }
 }
