@@ -39,9 +39,12 @@ export class Game {
             // Check if any menu or panel is visible
             if (window.menu) {
                 const isPanelVisible = 
-                    window.menu.instructionsPanel?.classList.contains('visible') ||
-                    window.menu.highScoresPanel?.classList.contains('visible') ||
-                    window.menu.settingsPanel?.classList.contains('visible');
+                    window.menu.instructionsPanel?.panel.classList.contains('visible') ||
+                    window.menu.shopPanel?.panel.classList.contains('visible') ||
+                    window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
+                    window.menu.profilePanel?.panel.classList.contains('visible') ||
+                    window.menu.highScoresPanel?.panel.classList.contains('visible') ||
+                    window.menu.settingsPanel?.panel.classList.contains('visible');
                 
                 // Only handle clicks if both menu and panels are hidden
                 if (!window.menu.isVisible && !isPanelVisible) {
@@ -69,9 +72,12 @@ export class Game {
         // Check if any menu or panel is visible
         if (window.menu) {
             const isPanelVisible = 
-                window.menu.instructionsPanel?.classList.contains('visible') ||
-                window.menu.highScoresPanel?.classList.contains('visible') ||
-                window.menu.settingsPanel?.classList.contains('visible');
+                window.menu.instructionsPanel?.panel.classList.contains('visible') ||
+                window.menu.shopPanel?.panel.classList.contains('visible') ||
+                window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
+                window.menu.profilePanel?.panel.classList.contains('visible') ||
+                window.menu.highScoresPanel?.panel.classList.contains('visible') ||
+                window.menu.settingsPanel?.panel.classList.contains('visible');
             
             // Don't handle actions if menu or any panel is visible
             if (window.menu.isVisible || isPanelVisible) {

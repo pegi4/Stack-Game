@@ -2,7 +2,7 @@ import './style.css';
 import { Game } from './game/game';
 import { testConnection } from './utils/supabase';
 import gsap from 'gsap';
-import { StartMenu } from './StartMenu';
+import { StartMenu } from './menu';
 
 // Initialize GSAP plugins if needed
 // import { Power1 } from 'gsap/all';

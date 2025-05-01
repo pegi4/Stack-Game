@@ -1,0 +1,109 @@
+/* src/menu/menu.css */
+.game-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.8);
+  font-family: 'Comfortaa', cursive;
+}
+
+.menu-title {
+  font-size: 80px;
+  color: #333344;
+  margin-bottom: 10px;
+  letter-spacing: 8px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu-option {
+  font-size: 24px;
+  color: #333344;
+  padding: 15px 20px;
+  margin: 8px 0;
+  border: 2px solid #333344;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.6);
+  width: 220px;
+  text-align: center;
+}
+
+.menu-option:hover {
+  background-color: #333344;
+  color: white;
+  transform: scale(1.05);
+}
+
+.panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 500px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  z-index: 200;
+  font-family: 'Comfortaa', cursive;
+}
+
+.panel.visible {
+  display: flex;
+  animation: fadeIn 0.5s ease;
+}
+
+.panel h2 {
+  font-size: 32px;
+  color: #333344;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.panel p {
+  font-size: 18px;
+  color: #555566;
+  margin: 8px 0;
+  text-align: left;
+  width: 100%;
+}
+
+.back-button {
+  margin-top: 30px;
+  padding: 10px 20px;
+  background-color: #333344;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #444455;
+  transform: scale(1.05);
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 18px;
+}
+
+.score-row:last-child {
+  border-bottom: none;
+} 
