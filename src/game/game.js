@@ -33,9 +33,28 @@ export class Game {
             if (e.keyCode == 32)
                 this.onAction();
         });
-        document.addEventListener('click', e => {
-            this.onAction();
+        
+        // Only handle clicks on the game area, not globally
+        this.mainContainer.addEventListener('click', e => {
+            // Check if any menu or panel is visible
+            if (window.menu) {
+                const isPanelVisible = 
+                    window.menu.instructionsPanel?.panel.classList.contains('visible') ||
+                    window.menu.shopPanel?.panel.classList.contains('visible') ||
+                    window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
+                    window.menu.profilePanel?.panel.classList.contains('visible') ||
+                    window.menu.highScoresPanel?.panel.classList.contains('visible') ||
+                    window.menu.settingsPanel?.panel.classList.contains('visible');
+                
+                // Only handle clicks if both menu and panels are hidden
+                if (!window.menu.isVisible && !isPanelVisible) {
+                    this.onAction();
+                }
+            } else {
+                this.onAction();
+            }
         });
+        
         document.addEventListener('touchstart', e => {
             e.preventDefault();
             // this.onAction();
@@ -50,6 +69,22 @@ export class Game {
         this.state = newState;
     }
     onAction() {
+        // Check if any menu or panel is visible
+        if (window.menu) {
+            const isPanelVisible = 
+                window.menu.instructionsPanel?.panel.classList.contains('visible') ||
+                window.menu.shopPanel?.panel.classList.contains('visible') ||
+                window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
+                window.menu.profilePanel?.panel.classList.contains('visible') ||
+                window.menu.highScoresPanel?.panel.classList.contains('visible') ||
+                window.menu.settingsPanel?.panel.classList.contains('visible');
+            
+            // Don't handle actions if menu or any panel is visible
+            if (window.menu.isVisible || isPanelVisible) {
+                return;
+            }
+        }
+
         switch (this.state) {
             case this.STATES.READY:
                 this.startGame();
@@ -63,7 +98,8 @@ export class Game {
         }
     }
     startGame() {
-        if (this.state != this.STATES.PLAYING) {
+        // Only start if we're not already playing and the menu is not visible
+        if (this.state != this.STATES.PLAYING && (!window.menu || !window.menu.isVisible)) {
             this.scoreContainer.innerHTML = '0';
             this.updateState(this.STATES.PLAYING);
             this.addBlock();
@@ -150,6 +186,13 @@ export class Game {
     }
     endGame() {
         this.updateState(this.STATES.ENDED);
+        
+        // Show the menu when the game ends
+        if (window.menu) {
+            setTimeout(() => {
+                window.menu.showMenu();
+            }, 1000);
+        }
     }
     tick() {
         this.blocks[this.blocks.length - 1].tick();
