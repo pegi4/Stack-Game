@@ -4,7 +4,6 @@ import { InstructionsPanel } from './InstructionsPanel';
 import { ShopPanel } from './ShopPanel';
 import { LeaderboardPanel } from './LeaderboardPanel';
 import { ProfilePanel } from './ProfilePanel';
-import { HighScoresPanel } from './HighScoresPanel';
 import { SettingsPanel } from './SettingsPanel';
 
 export class StartMenu {
@@ -30,7 +29,6 @@ export class StartMenu {
     this.createMenuOption('Shop', () => this.showShop());
     this.createMenuOption('Leaderboard', () => this.showLeaderboard());
     this.createMenuOption('Profile', () => this.showProfile());
-    this.createMenuOption('High Scores', () => this.showHighScores());
     this.createMenuOption('Settings', () => this.showSettings());
 
     // Create initial animations
@@ -41,7 +39,6 @@ export class StartMenu {
     this.shopPanel = new ShopPanel(this.container, () => this.showMenu());
     this.leaderboardPanel = new LeaderboardPanel(this.container, () => this.showMenu());
     this.profilePanel = new ProfilePanel(this.container, () => this.showMenu());
-    this.highScoresPanel = new HighScoresPanel(this.container, () => this.showMenu());
     this.settingsPanel = new SettingsPanel(this.container, () => this.showMenu());
   }
 
@@ -88,11 +85,6 @@ export class StartMenu {
     this.profilePanel.show();
   }
 
-  showHighScores() {
-    this.hideMenu();
-    this.highScoresPanel.show();
-  }
-
   showSettings() {
     this.hideMenu();
     this.settingsPanel.show();
@@ -106,7 +98,6 @@ export class StartMenu {
     this.shopPanel.hide();
     this.leaderboardPanel.hide();
     this.profilePanel.hide();
-    this.highScoresPanel.hide();
     this.settingsPanel.hide();
   }
 
