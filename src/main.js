@@ -1,12 +1,27 @@
 import './style.css';
 import { Game } from './game/game';
 import { testConnection } from './utils/supabase';
-import gsap from 'gsap';
 import { StartMenu } from './menu';
+import { supabase } from './utils/supabase';
+import { setCurrentUser } from './utils/globalUser';
 
-// Initialize GSAP plugins if needed
-// import { Power1 } from 'gsap/all';
-// gsap.registerPlugin(Power1);
+async function initializeAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setCurrentUser(session.user);
+    }
+  
+    // Poslušalec za realtime spremembe (login, logout)
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setCurrentUser(session.user);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+  }
+  
+  initializeAuth();
 
 // Test Supabase connection and initialize game
 async function initApp() {

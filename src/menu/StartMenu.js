@@ -1,4 +1,3 @@
-import gsap from 'gsap';
 import './menu.css';
 import { InstructionsPanel } from './InstructionsPanel';
 import { ShopPanel } from './ShopPanel';
