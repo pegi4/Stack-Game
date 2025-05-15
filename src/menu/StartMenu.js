@@ -4,6 +4,9 @@ import { ShopPanel } from './ShopPanel';
 import { LeaderboardPanel } from './LeaderboardPanel';
 import { ProfilePanel } from './ProfilePanel';
 import { SettingsPanel } from './SettingsPanel';
+import { AuthPanel } from './AuthPanel';
+import { getCurrentUser } from '../utils/globalUser';
+import { signOut } from '../auth';
 
 export class StartMenu {
   constructor(game) {
@@ -23,12 +26,7 @@ export class StartMenu {
     this.menuContainer.appendChild(this.title);
 
     // Create menu options
-    this.createMenuOption('Play Game', () => this.startGame());
-    this.createMenuOption('How To Play', () => this.showInstructions());
-    this.createMenuOption('Shop', () => this.showShop());
-    this.createMenuOption('Leaderboard', () => this.showLeaderboard());
-    this.createMenuOption('Profile', () => this.showProfile());
-    this.createMenuOption('Settings', () => this.showSettings());
+    this.createMenuOptions();
 
     // Create initial animations
     this.animateMenuIn();
@@ -39,6 +37,30 @@ export class StartMenu {
     this.leaderboardPanel = new LeaderboardPanel(this.container, () => this.showMenu());
     this.profilePanel = new ProfilePanel(this.container, () => this.showMenu());
     this.settingsPanel = new SettingsPanel(this.container, () => this.showMenu());
+    this.authPanel = new AuthPanel(this.container, () => this.showMenu());
+  }
+
+  createMenuOptions() {
+    // Clear existing options
+    while (this.menuContainer.children.length > 1) {
+      this.menuContainer.removeChild(this.menuContainer.lastChild);
+    }
+
+    this.createMenuOption('Play Game', () => this.startGame());
+    this.createMenuOption('How To Play', () => this.showInstructions());
+    this.createMenuOption('Leaderboard', () => this.showLeaderboard());
+    
+    // Check if user is logged in
+    const user = getCurrentUser();
+    if (user) {
+      this.createMenuOption('Shop', () => this.showShop());
+      this.createMenuOption('Profile', () => this.showProfile());
+      this.createMenuOption('Logout', () => this.handleLogout());
+    } else {
+      this.createMenuOption('Login / Register', () => this.showAuth());
+    }
+    
+    this.createMenuOption('Settings', () => this.showSettings());
   }
 
   createMenuOption(text, onClick) {
@@ -88,16 +110,35 @@ export class StartMenu {
     this.hideMenu();
     this.settingsPanel.show();
   }
+  
+  showAuth() {
+    this.hideMenu();
+    this.authPanel.show();
+  }
+  
+  async handleLogout() {
+    try {
+      await signOut();
+      this.createMenuOptions(); // Refresh menu options after logout
+      this.showMenu();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  }
 
   showMenu() {
     this.isVisible = true;
+    // Refresh menu options in case auth state changed
+    this.createMenuOptions();
     this.menuContainer.style.display = 'flex';
+    
     // Hide all panels
     this.instructionsPanel.hide();
     this.shopPanel.hide();
     this.leaderboardPanel.hide();
     this.profilePanel.hide();
     this.settingsPanel.hide();
+    this.authPanel.hide();
   }
 
   hideMenu() {
