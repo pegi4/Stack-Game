@@ -1,4 +1,4 @@
-import { getProfile, updateProfile, uploadAvatar, deleteAvatar, updatePassword } from '../auth';
+import { getProfile, updateProfile, uploadAvatar, deleteAvatar, updatePassword, signOut } from '../auth';
 import { getCurrentUser as getGlobalUser } from '../utils/globalUser';
 
 export class ProfilePanel {
@@ -115,6 +115,10 @@ export class ProfilePanel {
       <div class="profile-section">
         <div class="status-message"></div>
       </div>
+      
+      <div class="profile-section profile-actions">
+        <button class="logout-btn">Logout</button>
+      </div>
     `;
     
     // Add event listeners
@@ -139,6 +143,24 @@ export class ProfilePanel {
     // Update password
     const updatePasswordBtn = this.panel.querySelector('.update-password-btn');
     updatePasswordBtn.addEventListener('click', () => this.handleUpdatePassword());
+    
+    // Logout
+    const logoutBtn = this.panel.querySelector('.logout-btn');
+    logoutBtn.addEventListener('click', () => this.handleLogout());
+  }
+  
+  async handleLogout() {
+    try {
+      this.showStatusMessage('Logging out...');
+      
+      await signOut();
+      
+      // Return to menu - this will refresh the menu options based on auth state
+      this.onBack();
+      
+    } catch (error) {
+      this.showStatusMessage('Failed to logout: ' + error.message, 'error');
+    }
   }
   
   async handleAvatarUpload(event) {

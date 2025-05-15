@@ -6,17 +6,15 @@ export class AuthPanel {
     this.container = container;
     this.onBack = onBack;
     this.isVisible = false;
+    this.isLoading = false;
     
     // Create panel container
     this.panelContainer = document.createElement('div');
     this.panelContainer.className = 'panel auth-panel';
     this.container.appendChild(this.panelContainer);
     
-    // Create panel title
-    this.title = document.createElement('h2');
-    this.title.textContent = 'Login / Register';
-    this.title.className = 'panel-title';
-    this.panelContainer.appendChild(this.title);
+    // Create panel header with back button and title
+    this.createPanelHeader();
     
     // Create mode toggle
     this.createModeToggle();
@@ -25,11 +23,37 @@ export class AuthPanel {
     this.currentMode = 'login';
     this.createLoginForm();
     
-    // Create back button
-    this.createBackButton();
-    
     // Initially hide panel
     this.hide();
+  }
+  
+  createPanelHeader() {
+    // Create header container
+    const headerContainer = document.createElement('div');
+    headerContainer.className = 'panel-header';
+    
+    // Create back button as an icon
+    const backButton = document.createElement('button');
+    backButton.className = 'back-icon';
+    backButton.innerHTML = '&larr;'; // Left arrow symbol
+    backButton.title = 'Back to menu';
+    backButton.addEventListener('click', () => {
+      if (!this.isLoading) {
+        this.onBack();
+      }
+    });
+    
+    // Create panel title
+    this.title = document.createElement('h2');
+    this.title.textContent = 'Login / Register';
+    this.title.className = 'panel-title';
+    
+    // Add elements to header
+    headerContainer.appendChild(backButton);
+    headerContainer.appendChild(this.title);
+    
+    // Add header to panel
+    this.panelContainer.appendChild(headerContainer);
   }
   
   createModeToggle() {
@@ -52,7 +76,7 @@ export class AuthPanel {
   }
   
   switchMode(mode) {
-    if (mode === this.currentMode) return;
+    if (mode === this.currentMode || this.isLoading) return;
     
     this.currentMode = mode;
     
@@ -110,20 +134,51 @@ export class AuthPanel {
     passwordContainer.appendChild(passwordInput);
     
     // Create login button
-    const loginButton = document.createElement('button');
-    loginButton.textContent = 'Login';
-    loginButton.className = 'auth-button';
-    loginButton.addEventListener('click', () => this.handleLogin(emailInput.value, passwordInput.value));
+    this.loginButton = document.createElement('button');
+    this.loginButton.textContent = 'Login';
+    this.loginButton.className = 'auth-button';
+    this.loginButton.addEventListener('click', () => this.handleLogin(emailInput.value, passwordInput.value));
+    
+    // Add keypress event listener to inputs
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        passwordInput.focus();
+      }
+    });
+    
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.handleLogin(emailInput.value, passwordInput.value);
+      }
+    });
+    
+    // Create status message container
+    this.statusContainer = document.createElement('div');
+    this.statusContainer.className = 'auth-status-container';
+    
+    // Create loading indicator
+    this.loadingIndicator = document.createElement('div');
+    this.loadingIndicator.className = 'loading-indicator';
+    this.loadingIndicator.innerHTML = '<div class="spinner"></div>';
+    this.loadingIndicator.style.display = 'none';
     
     // Create error message area
     this.errorMessage = document.createElement('p');
     this.errorMessage.className = 'error-message';
     
+    // Create success message area
+    this.successMessage = document.createElement('p');
+    this.successMessage.className = 'success-message';
+    
     // Append all elements
+    this.statusContainer.appendChild(this.loadingIndicator);
+    this.statusContainer.appendChild(this.errorMessage);
+    this.statusContainer.appendChild(this.successMessage);
+    
     this.formContainer.appendChild(emailContainer);
     this.formContainer.appendChild(passwordContainer);
-    this.formContainer.appendChild(loginButton);
-    this.formContainer.appendChild(this.errorMessage);
+    this.formContainer.appendChild(this.loginButton);
+    this.formContainer.appendChild(this.statusContainer);
     
     this.panelContainer.appendChild(this.formContainer);
   }
@@ -181,83 +236,208 @@ export class AuthPanel {
     passwordContainer.appendChild(passwordInput);
     
     // Create register button
-    const registerButton = document.createElement('button');
-    registerButton.textContent = 'Register';
-    registerButton.className = 'auth-button';
-    registerButton.addEventListener('click', () => this.handleRegister(
+    this.registerButton = document.createElement('button');
+    this.registerButton.textContent = 'Register';
+    this.registerButton.className = 'auth-button';
+    this.registerButton.addEventListener('click', () => this.handleRegister(
       usernameInput.value,
       emailInput.value,
       passwordInput.value
     ));
     
+    // Add keypress event listener to inputs
+    usernameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        emailInput.focus();
+      }
+    });
+    
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        passwordInput.focus();
+      }
+    });
+    
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.handleRegister(usernameInput.value, emailInput.value, passwordInput.value);
+      }
+    });
+    
+    // Create status message container
+    this.statusContainer = document.createElement('div');
+    this.statusContainer.className = 'auth-status-container';
+    
+    // Create loading indicator
+    this.loadingIndicator = document.createElement('div');
+    this.loadingIndicator.className = 'loading-indicator';
+    this.loadingIndicator.innerHTML = '<div class="spinner"></div>';
+    this.loadingIndicator.style.display = 'none';
+    
     // Create error message area
     this.errorMessage = document.createElement('p');
     this.errorMessage.className = 'error-message';
     
+    // Create success message area
+    this.successMessage = document.createElement('p');
+    this.successMessage.className = 'success-message';
+    
     // Append all elements
+    this.statusContainer.appendChild(this.loadingIndicator);
+    this.statusContainer.appendChild(this.errorMessage);
+    this.statusContainer.appendChild(this.successMessage);
+    
     this.formContainer.appendChild(usernameContainer);
     this.formContainer.appendChild(emailContainer);
     this.formContainer.appendChild(passwordContainer);
-    this.formContainer.appendChild(registerButton);
-    this.formContainer.appendChild(this.errorMessage);
+    this.formContainer.appendChild(this.registerButton);
+    this.formContainer.appendChild(this.statusContainer);
     
     this.panelContainer.appendChild(this.formContainer);
   }
   
   async handleLogin(email, password) {
+    if (this.isLoading) return;
+    
     if (!email || !password) {
       this.showError('Please enter both email and password');
+      this.shakeForm();
       return;
     }
     
     try {
-      this.showError(''); // Clear previous errors
+      this.setLoading(true);
+      this.clearMessages();
+      
       await signIn({ email, password });
-      this.onBack(); // Return to main menu after successful login
+      
+      this.showSuccess('Login successful!');
+      
+      // Add success animation and delay before returning to menu
+      this.formContainer.classList.add('auth-success');
+      
+      setTimeout(() => {
+        this.onBack(); // Return to main menu after successful login
+      }, 1500);
+      
     } catch (error) {
       this.showError(error.message || 'Login failed. Please try again.');
+      this.shakeForm();
+    } finally {
+      this.setLoading(false);
     }
   }
   
   async handleRegister(username, email, password) {
+    if (this.isLoading) return;
+    
     if (!username || !email || !password) {
       this.showError('Please fill in all fields');
+      this.shakeForm();
       return;
     }
     
     if (password.length < 6) {
       this.showError('Password must be at least 6 characters');
+      this.shakeForm();
       return;
     }
     
     try {
-      this.showError(''); // Clear previous errors
+      this.setLoading(true);
+      this.clearMessages();
+      
       await signUp({ email, password, username });
-      this.showError('Registration successful! Please check your email to confirm your account.');
-      // Optionally switch to login mode
-      setTimeout(() => this.switchMode('login'), 2000);
+      
+      this.showSuccess('Registration successful! Please check your email to confirm your account.');
+      
+      // Add success animation
+      this.formContainer.classList.add('auth-success');
+      
+      // Optionally switch to login mode after a delay
+      setTimeout(() => {
+        this.formContainer.classList.remove('auth-success');
+        this.switchMode('login');
+      }, 2000);
+      
     } catch (error) {
       this.showError(error.message || 'Registration failed. Please try again.');
+      this.shakeForm();
+    } finally {
+      this.setLoading(false);
+    }
+  }
+  
+  setLoading(isLoading) {
+    this.isLoading = isLoading;
+    
+    if (isLoading) {
+      this.loadingIndicator.style.display = 'flex';
+      
+      // Disable buttons during loading
+      if (this.loginButton) this.loginButton.disabled = true;
+      if (this.registerButton) this.registerButton.disabled = true;
+      
+      // Add loading class to button
+      if (this.currentMode === 'login' && this.loginButton) {
+        this.loginButton.classList.add('loading');
+        this.loginButton.innerHTML = '<span class="btn-text">Logging in...</span><div class="btn-spinner"></div>';
+      } else if (this.currentMode === 'register' && this.registerButton) {
+        this.registerButton.classList.add('loading');
+        this.registerButton.innerHTML = '<span class="btn-text">Registering...</span><div class="btn-spinner"></div>';
+      }
+    } else {
+      this.loadingIndicator.style.display = 'none';
+      
+      // Re-enable buttons
+      if (this.loginButton) {
+        this.loginButton.disabled = false;
+        this.loginButton.classList.remove('loading');
+        this.loginButton.textContent = 'Login';
+      }
+      if (this.registerButton) {
+        this.registerButton.disabled = false;
+        this.registerButton.classList.remove('loading');
+        this.registerButton.textContent = 'Register';
+      }
+    }
+  }
+  
+  clearMessages() {
+    this.errorMessage.textContent = '';
+    this.successMessage.textContent = '';
+    
+    // Also remove any animation classes
+    if (this.formContainer) {
+      this.formContainer.classList.remove('auth-error', 'auth-success');
     }
   }
   
   showError(message) {
     this.errorMessage.textContent = message;
+    this.successMessage.textContent = '';
   }
   
-  createBackButton() {
-    const backButton = document.createElement('button');
-    backButton.textContent = 'Back to Menu';
-    backButton.className = 'back-button';
-    backButton.addEventListener('click', () => {
-      this.onBack();
-    });
-    this.panelContainer.appendChild(backButton);
+  showSuccess(message) {
+    this.successMessage.textContent = message;
+    this.errorMessage.textContent = '';
+  }
+  
+  shakeForm() {
+    // Add and remove shake animation class
+    if (this.formContainer) {
+      this.formContainer.classList.add('auth-error');
+      setTimeout(() => {
+        this.formContainer.classList.remove('auth-error');
+      }, 500);
+    }
   }
   
   show() {
     this.isVisible = true;
     this.panelContainer.style.display = 'flex';
+    this.clearMessages();
+    this.setLoading(false);
   }
   
   hide() {

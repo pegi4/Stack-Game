@@ -147,6 +147,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .form-group {
@@ -186,18 +188,115 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-button:hover {
   background-color: #444455;
 }
 
+.auth-button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.auth-button.loading {
+  background-color: #444455;
+  cursor: wait;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-text {
+  margin-right: 10px;
+}
+
+.btn-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.auth-status-container {
+  width: 100%;
+  min-height: 60px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.loading-indicator {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(51, 51, 68, 0.2);
+  border-radius: 50%;
+  border-top-color: #333344;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .error-message {
   color: #ff3333;
   font-size: 14px;
-  margin-top: 15px;
+  margin-top: 5px;
   text-align: center;
   min-height: 18px;
+  width: 100%;
+}
+
+.success-message {
+  color: #2ecc71;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+  min-height: 18px;
+  width: 100%;
+}
+
+/* Animation classes */
+.auth-error {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.auth-success {
+  animation: success-pulse 1.5s ease-in-out;
+}
+
+@keyframes success-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  50% { box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Profile Panel Styles */
@@ -333,4 +432,66 @@
 
 .delete-avatar:hover {
   background-color: #c0392b;
+}
+
+/* Logout Button Style */
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15px;
+}
+
+.logout-btn {
+  padding: 12px 25px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
+  transform: scale(1.02);
+}
+
+/* Panel Header Styles */
+.panel-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.panel-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+
+.back-icon {
+  position: absolute;
+  left: -10px;
+  top: 35%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #333344;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  line-height: 1;
+  z-index: 5;
+}
+
+.back-icon:hover {
+  background-color: rgba(51, 51, 68, 0.1);
+  transform: translateY(-50%) scale(1.1);
 } 

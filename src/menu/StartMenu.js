@@ -55,11 +55,10 @@ export class StartMenu {
     if (user) {
       this.createMenuOption('Shop', () => this.showShop());
       this.createMenuOption('Profile', () => this.showProfile());
-      this.createMenuOption('Logout', () => this.handleLogout());
     } else {
       this.createMenuOption('Login / Register', () => this.showAuth());
     }
-    
+
     this.createMenuOption('Settings', () => this.showSettings());
   }
 
@@ -114,16 +113,6 @@ export class StartMenu {
   showAuth() {
     this.hideMenu();
     this.authPanel.show();
-  }
-  
-  async handleLogout() {
-    try {
-      await signOut();
-      this.createMenuOptions(); // Refresh menu options after logout
-      this.showMenu();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
   }
 
   showMenu() {
