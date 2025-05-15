@@ -43,7 +43,6 @@ export class Game {
                     window.menu.shopPanel?.panel.classList.contains('visible') ||
                     window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
                     window.menu.profilePanel?.panel.classList.contains('visible') ||
-                    window.menu.highScoresPanel?.panel.classList.contains('visible') ||
                     window.menu.settingsPanel?.panel.classList.contains('visible');
                 
                 // Only handle clicks if both menu and panels are hidden
@@ -76,7 +75,6 @@ export class Game {
                 window.menu.shopPanel?.panel.classList.contains('visible') ||
                 window.menu.leaderboardPanel?.panel.classList.contains('visible') ||
                 window.menu.profilePanel?.panel.classList.contains('visible') ||
-                window.menu.highScoresPanel?.panel.classList.contains('visible') ||
                 window.menu.settingsPanel?.panel.classList.contains('visible');
             
             // Don't handle actions if menu or any panel is visible

@@ -1,12 +1,34 @@
 import './style.css';
 import { Game } from './game/game';
 import { testConnection } from './utils/supabase';
-import gsap from 'gsap';
 import { StartMenu } from './menu';
+import { supabase } from './utils/supabase';
+import { setCurrentUser } from './utils/globalUser';
 
-// Initialize GSAP plugins if needed
-// import { Power1 } from 'gsap/all';
-// gsap.registerPlugin(Power1);
+async function initializeAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setCurrentUser(session.user);
+    }
+  
+    // Listener for auth state changes (login, logout)
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (session?.user) {
+        setCurrentUser(session.user);
+      } else {
+        setCurrentUser(null);
+      }
+      
+      // Refresh menu if it exists
+      if (window.menu) {
+        window.menu.showMenu();
+      }
+    });
+}
+
+// Initialize auth before starting the app
+initializeAuth();
 
 // Test Supabase connection and initialize game
 async function initApp() {
