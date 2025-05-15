@@ -1,4 +1,4 @@
-import { getProfile, updateProfile, uploadAvatar, deleteAvatar, updatePassword, signOut } from '../auth';
+import { getProfile, updateProfile, uploadAvatar, deleteAvatar, updatePassword, signOut } from '../db/auth';
 import { getCurrentUser as getGlobalUser } from '../utils/globalUser';
 
 export class ProfilePanel {

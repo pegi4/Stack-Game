@@ -1,4 +1,4 @@
-import { supabase } from '../utils/supabase'
+import { supabase } from '../../utils/supabase'
 
 // Auth state management
 export const getCurrentUser = async () => {
