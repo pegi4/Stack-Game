@@ -57,14 +57,37 @@ export const signOut = async () => {
 
 // Profile management
 export const getProfile = async (userId) => {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-    
-    if (error) throw error
-    return data
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single()
+        
+        if (error && error.code !== 'PGRST116') throw error
+        
+        if (!data) {
+            // Create a default profile if one doesn't exist
+            const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert([
+                    {
+                        id: userId,
+                        username: 'Player',
+                        avatar_url: null,
+                    }
+                ])
+                .select()
+                .single()
+            
+            if (insertError) throw insertError
+            return newProfile
+        }
+        
+        return data
+    } catch (error) {
+        throw error
+    }
 }
 
 export const updateProfile = async ({ userId, updates }) => {
@@ -82,9 +105,32 @@ export const updateProfile = async ({ userId, updates }) => {
 // Avatar management
 export const uploadAvatar = async (userId, file) => {
     try {
-        // 1. Upload file to storage
+        // First, delete the previous avatar if exists
+        try {
+            // Get current profile data
+            const profileData = await getProfile(userId);
+            
+            // If user has an existing avatar, delete it first
+            if (profileData && profileData.avatar_url) {
+                // Extract existing filename from URL
+                const currentAvatarUrl = profileData.avatar_url;
+                const currentFileName = currentAvatarUrl.split('/').pop();
+                
+                // Delete the file from storage
+                await supabase.storage
+                    .from('avatars')
+                    .remove([currentFileName]);
+                
+                console.log('Previous avatar deleted:', currentFileName);
+            }
+        } catch (error) {
+            // Just log but continue if there's an error deleting old avatar
+            console.warn('Error deleting previous avatar:', error);
+        }
+
+        // 1. Upload new file to storage
         const fileExt = file.name.split('.').pop()
-        const fileName = `${userId}-${Math.random()}.${fileExt}`
+        const fileName = `${userId}-${Date.now()}.${fileExt}`
         const filePath = `${fileName}`
 
         const { error: uploadError } = await supabase.storage
@@ -114,30 +160,75 @@ export const uploadAvatar = async (userId, file) => {
 
 export const deleteAvatar = async (userId) => {
     try {
+        console.log('Starting avatar deletion for user:', userId);
+        
         // 1. Get current avatar URL
-        const { data: profile } = await getProfile(userId)
-        if (!profile.avatar_url) return
+        const profileData = await getProfile(userId)
+        
+        // Check if profile exists and has an avatar_url
+        if (!profileData || !profileData.avatar_url) {
+            console.log('No avatar to delete or profile not found');
+            return;
+        }
 
         // 2. Extract filename from URL
-        const avatarUrl = profile.avatar_url
-        const fileName = avatarUrl.split('/').pop()
-
-        // 3. Delete from storage
-        const { error: deleteError } = await supabase.storage
-            .from('avatars')
-            .remove([fileName])
+        const avatarUrl = profileData.avatar_url;
+        console.log('Avatar URL to delete:', avatarUrl);
         
-        if (deleteError) throw deleteError
+        // URL could be in different formats, extract filename safely
+        let fileName;
+        try {
+            // Try to get the file path from the URL
+            const url = new URL(avatarUrl);
+            const pathParts = url.pathname.split('/');
+            // The last part should be the filename
+            fileName = pathParts[pathParts.length - 1];
+            
+            // For Supabase URLs, the filename might include URL parameters, clean it up
+            if (fileName.includes('?')) {
+                fileName = fileName.split('?')[0];
+            }
+        } catch (error) {
+            // If URL parsing fails, fall back to simple splitting
+            fileName = avatarUrl.split('/').pop();
+        }
+        
+        console.log('Extracted filename to delete:', fileName);
 
-        // 4. Update profile to remove avatar URL
+        // 3. Update profile to remove avatar URL first (to prevent orphaned references)
         const { error: updateError } = await supabase
             .from('profiles')
             .update({ avatar_url: null })
             .eq('id', userId)
 
-        if (updateError) throw updateError
+        if (updateError) {
+            console.error('Error updating profile:', updateError);
+            throw updateError;
+        }
+        
+        console.log('Profile updated, removing avatar_url reference');
+
+        // 4. Delete from storage (even if this fails, the profile is updated)
+        console.log('Attempting to delete file from storage:', fileName);
+        
+        const { error: deleteError, data: deleteData } = await supabase.storage
+            .from('avatars')
+            .remove([fileName])
+        
+        if (deleteError) {
+            console.error('Error deleting avatar file:', deleteError);
+            // Also log details about the request
+            console.error('Bucket: avatars, Filename:', fileName);
+            // Don't throw here - we've already updated the profile
+            console.warn('File might remain in storage, but avatar has been removed from profile');
+        } else {
+            console.log('Avatar file deleted successfully:', deleteData);
+        }
+        
+        return true;
     } catch (error) {
-        throw error
+        console.error('Delete avatar error:', error);
+        throw error;
     }
 }
 
