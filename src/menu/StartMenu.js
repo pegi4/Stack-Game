@@ -6,7 +6,6 @@ import { ProfilePanel } from './ProfilePanel';
 import { SettingsPanel } from './SettingsPanel';
 import { AuthPanel } from './AuthPanel';
 import { getCurrentUser } from '../utils/globalUser';
-import { signOut } from '../auth';
 
 export class StartMenu {
   constructor(game) {

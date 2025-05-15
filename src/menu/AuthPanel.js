@@ -1,5 +1,5 @@
 import './menu.css';
-import { signIn, signUp } from '../auth';
+import { signIn, signUp } from '../db/auth';
 
 export class AuthPanel {
   constructor(container, onBack) {

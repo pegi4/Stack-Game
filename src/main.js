@@ -4,6 +4,7 @@ import { testConnection } from './utils/supabase';
 import { StartMenu } from './menu';
 import { supabase } from './utils/supabase';
 import { setCurrentUser } from './utils/globalUser';
+import './db/scores';
 
 async function initializeAuth() {
     const { data: { session } } = await supabase.auth.getSession();
