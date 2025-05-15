@@ -13,6 +13,11 @@ export class ProfilePanel {
     this.panel.className = 'panel profile-panel';
     container.appendChild(this.panel);
     
+    // Create notification container
+    this.notificationContainer = document.createElement('div');
+    this.notificationContainer.className = 'notification-container';
+    this.container.appendChild(this.notificationContainer);
+    
     // Create initial structure
     this.renderPanel();
     
@@ -22,15 +27,17 @@ export class ProfilePanel {
   
   renderPanel() {
     this.panel.innerHTML = `
-      <h2>User Profile</h2>
+      <div class="panel-header">
+        <button class="back-icon">&larr;</button>
+        <h2 class="panel-title">User Profile</h2>
+      </div>
       <div class="profile-content">
         <div class="profile-loading">Loading profile...</div>
       </div>
-      <div class="back-button">Back to Menu</div>
     `;
     
     // Add click handler for back button
-    const backButton = this.panel.querySelector('.back-button');
+    const backButton = this.panel.querySelector('.back-icon');
     backButton.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent event from bubbling to game
       this.onBack();
@@ -62,7 +69,7 @@ export class ProfilePanel {
         };
         
         this.renderProfileContent();
-        this.showStatusMessage('Using default profile until saved', 'error');
+        this.showNotification('Using default profile until saved', 'error');
       }
     } catch (error) {
       console.error('Profile loading error:', error);
@@ -90,6 +97,10 @@ export class ProfilePanel {
           </div>
         </div>
       </div>
+
+      <div class="profile-section profile-actions">
+        <button class="logout-btn">Logout</button>
+      </div>
       
       <div class="profile-section">
         <div class="form-group">
@@ -110,14 +121,6 @@ export class ProfilePanel {
           <input type="password" id="confirm-password" />
         </div>
         <button class="update-password-btn">Update Password</button>
-      </div>
-      
-      <div class="profile-section">
-        <div class="status-message"></div>
-      </div>
-      
-      <div class="profile-section profile-actions">
-        <button class="logout-btn">Logout</button>
       </div>
     `;
     
@@ -151,7 +154,7 @@ export class ProfilePanel {
   
   async handleLogout() {
     try {
-      this.showStatusMessage('Logging out...');
+      this.showNotification('Logging out...');
       
       await signOut();
       
@@ -159,7 +162,7 @@ export class ProfilePanel {
       this.onBack();
       
     } catch (error) {
-      this.showStatusMessage('Failed to logout: ' + error.message, 'error');
+      this.showNotification('Failed to logout: ' + error.message, 'error');
     }
   }
   
@@ -168,7 +171,7 @@ export class ProfilePanel {
     if (!file) return;
     
     try {
-      this.showStatusMessage('Uploading avatar...');
+      this.showNotification('Uploading avatar...');
       
       const user = getGlobalUser();
       const avatarUrl = await uploadAvatar(user.id, file);
@@ -177,15 +180,15 @@ export class ProfilePanel {
       this.profile.avatar_url = avatarUrl;
       this.renderProfileContent();
       
-      this.showStatusMessage('Avatar uploaded successfully!', 'success');
+      this.showNotification('Avatar uploaded successfully!', 'success');
     } catch (error) {
-      this.showStatusMessage('Failed to upload avatar: ' + error.message, 'error');
+      this.showNotification('Failed to upload avatar: ' + error.message, 'error');
     }
   }
   
   async handleDeleteAvatar() {
     try {
-      this.showStatusMessage('Deleting avatar...');
+      this.showNotification('Deleting avatar...');
       
       const user = getGlobalUser();
       await deleteAvatar(user.id);
@@ -194,9 +197,9 @@ export class ProfilePanel {
       this.profile.avatar_url = null;
       this.renderProfileContent();
       
-      this.showStatusMessage('Avatar deleted successfully!', 'success');
+      this.showNotification('Avatar deleted successfully!', 'success');
     } catch (error) {
-      this.showStatusMessage('Failed to delete avatar: ' + error.message, 'error');
+      this.showNotification('Failed to delete avatar: ' + error.message, 'error');
     }
   }
   
@@ -205,12 +208,12 @@ export class ProfilePanel {
     const newUsername = usernameInput.value.trim();
     
     if (!newUsername) {
-      this.showStatusMessage('Username cannot be empty', 'error');
+      this.showNotification('Username cannot be empty', 'error');
       return;
     }
     
     try {
-      this.showStatusMessage('Updating username...');
+      this.showNotification('Updating username...');
       
       const user = getGlobalUser();
       const updatedProfile = await updateProfile({
@@ -221,9 +224,9 @@ export class ProfilePanel {
       // Update profile
       this.profile = updatedProfile;
       
-      this.showStatusMessage('Username updated successfully!', 'success');
+      this.showNotification('Username updated successfully!', 'success');
     } catch (error) {
-      this.showStatusMessage('Failed to update username: ' + error.message, 'error');
+      this.showNotification('Failed to update username: ' + error.message, 'error');
     }
   }
   
@@ -235,22 +238,22 @@ export class ProfilePanel {
     const confirmPassword = confirmPasswordInput.value;
     
     if (!newPassword) {
-      this.showStatusMessage('Password cannot be empty', 'error');
+      this.showNotification('Password cannot be empty', 'error');
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      this.showStatusMessage('Passwords do not match', 'error');
+      this.showNotification('Passwords do not match', 'error');
       return;
     }
     
     if (newPassword.length < 6) {
-      this.showStatusMessage('Password must be at least 6 characters', 'error');
+      this.showNotification('Password must be at least 6 characters', 'error');
       return;
     }
     
     try {
-      this.showStatusMessage('Updating password...');
+      this.showNotification('Updating password...');
       
       await updatePassword(newPassword);
       
@@ -258,9 +261,9 @@ export class ProfilePanel {
       newPasswordInput.value = '';
       confirmPasswordInput.value = '';
       
-      this.showStatusMessage('Password updated successfully!', 'success');
+      this.showNotification('Password updated successfully!', 'success');
     } catch (error) {
-      this.showStatusMessage('Failed to update password: ' + error.message, 'error');
+      this.showNotification('Failed to update password: ' + error.message, 'error');
     }
   }
   
@@ -274,24 +277,45 @@ export class ProfilePanel {
     content.innerHTML = `<div class="profile-error">${message}</div>`;
   }
   
-  showStatusMessage(message, type = '') {
-    const statusMessage = this.panel.querySelector('.status-message');
-    if (statusMessage) {
-      statusMessage.textContent = message;
-      statusMessage.className = 'status-message';
-      if (type) {
-        statusMessage.classList.add(`status-${type}`);
-      }
+  showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    // Add icon based on type
+    let icon = '💬';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+    
+    notification.innerHTML = `
+      <span class="notification-icon">${icon}</span>
+      <span class="notification-message">${message}</span>
+    `;
+    
+    // Add to container
+    this.notificationContainer.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10);
+    
+    // Auto remove after timeout
+    const timeout = type === 'error' ? 5000 : 3000;
+    setTimeout(() => {
+      notification.classList.remove('show');
+      notification.classList.add('hide');
       
-      // Clear success messages after 3 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          if (statusMessage.textContent === message) {
-            statusMessage.textContent = '';
-          }
-        }, 3000);
-      }
-    }
+      // Remove from DOM after animation
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 500);
+    }, timeout);
+    
+    return notification;
   }
   
   show() {
