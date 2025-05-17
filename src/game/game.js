@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { Stage } from './stage';
 import { Block } from './block';
+import { getCurrentUser } from '../utils/globalUser';
+import { saveScore } from '../db/scores';
 
 export class Game {
     constructor() {
@@ -184,6 +186,16 @@ export class Game {
     }
     endGame() {
         this.updateState(this.STATES.ENDED);
+        
+        // Save score if user is logged in
+        const user = getCurrentUser();
+        const finalScore = parseInt(this.scoreContainer.innerHTML);
+        
+        if (user && finalScore > 0) {
+            saveScore({ userId: user.id, score: finalScore })
+                .then(() => console.log('Score saved successfully'))
+                .catch(error => console.error('Error saving score:', error));
+        }
         
         // Show the menu when the game ends
         if (window.menu) {
