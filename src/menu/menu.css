@@ -301,7 +301,7 @@
 
 /* Profile Panel Styles */
 .profile-panel {
-  max-width: 450px;
+  max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
 }
