@@ -685,3 +685,96 @@
 .leaderboard-row.top-3 .rank {
   color: #cd7f32;
 }
+
+.settings-section {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.settings-section h3 {
+  font-size: 20px;
+  color: #333344;
+  margin-bottom: 15px;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #f0f0f0;
+  outline: none;
+  border-radius: 3px;
+  margin-right: 15px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #333344;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #333344;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  background: #444455;
+  transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  background: #444455;
+  transform: scale(1.2);
+}
+
+.volume-value {
+  width: 45px;
+  text-align: right;
+  font-size: 14px;
+  color: #555566;
+}
+
+/* Status message for settings */
+.status-message {
+  margin-top: 15px;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.status-success {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.status-error {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.status-info {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}

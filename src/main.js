@@ -4,6 +4,7 @@ import { testConnection } from './utils/supabase';
 import { StartMenu } from './menu';
 import { supabase } from './utils/supabase';
 import { setCurrentUser } from './utils/globalUser';
+import { AudioManager } from './audio/AudioManager';
 import './db/scores';
 
 async function initializeAuth() {
@@ -28,8 +29,19 @@ async function initializeAuth() {
     });
 }
 
+// Initialize audio manager
+function initializeAudio() {
+    // Create audio manager and make it globally accessible
+    window.audioManager = new AudioManager();
+    
+    console.log('Audio system initialized');
+}
+
 // Initialize auth before starting the app
 initializeAuth();
+
+// Initialize the audio system
+initializeAudio();
 
 // Test Supabase connection and initialize game
 async function initApp() {
@@ -56,6 +68,11 @@ async function initApp() {
         
         if (startButton) startButton.style.display = 'none';
         if (instructions) instructions.style.display = 'none';
+        
+        // Start menu audio when menu is first shown
+        if (window.audioManager) {
+            window.audioManager.playMenuAudio();
+        }
         
     } catch (error) {
         console.error('Initialization error:', error)

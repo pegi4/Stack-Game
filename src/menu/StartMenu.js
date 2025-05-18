@@ -37,6 +37,11 @@ export class StartMenu {
     this.profilePanel = new ProfilePanel(this.container, () => this.showMenu());
     this.settingsPanel = new SettingsPanel(this.container, () => this.showMenu());
     this.authPanel = new AuthPanel(this.container, () => this.showMenu());
+    
+    // Start menu audio when menu is created
+    if (window.audioManager) {
+      window.audioManager.playMenuAudio();
+    }
   }
 
   createMenuOptions() {
@@ -79,6 +84,13 @@ export class StartMenu {
   startGame() {
     this.isVisible = false;
     this.hideMenu();
+    
+    // Stop menu audio when game starts
+    if (window.audioManager) {
+      // Note: The game class will handle starting the game audio
+      window.audioManager.stopMenuAudio();
+    }
+    
     setTimeout(() => {
       this.game.startGame();
     }, 500);
@@ -120,6 +132,11 @@ export class StartMenu {
     this.createMenuOptions();
     this.menuContainer.style.display = 'flex';
     
+    // Ensure menu audio is playing when showing the menu
+    if (window.audioManager && this.game.state !== this.game.STATES.PLAYING) {
+      window.audioManager.playMenuAudio();
+    }
+    
     // Hide all panels
     this.instructionsPanel.hide();
     this.shopPanel.hide();
@@ -132,4 +149,4 @@ export class StartMenu {
   hideMenu() {
     this.menuContainer.style.display = 'none';
   }
-} 
+}

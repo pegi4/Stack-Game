@@ -63,12 +63,42 @@ export class Game {
             // insta-lose, will figure it out later.
         });
     }
+    
     updateState(newState) {
         for (let key in this.STATES)
             this.mainContainer.classList.remove(this.STATES[key]);
         this.mainContainer.classList.add(newState);
         this.state = newState;
+        
+        // Handle audio state changes
+        if (window.audioManager) {
+            // When game starts playing, switch from menu to game audio
+            if (newState === this.STATES.PLAYING) {
+                window.audioManager.stopMenuAudio();
+                window.audioManager.playGameAudio();
+            }
+            
+            // When game ends, stop game audio
+            if (newState === this.STATES.ENDED) {
+                window.audioManager.stopGameAudio();
+                window.audioManager.playGameOverSound();
+                
+                // After a delay, start menu audio again when game is over
+                setTimeout(() => {
+                    window.audioManager.playMenuAudio();
+                }, 1000);
+            }
+            
+            // When game is reset, play menu audio
+            if (newState === this.STATES.RESETTING) {
+                window.audioManager.stopGameAudio();
+                setTimeout(() => {
+                    window.audioManager.playMenuAudio();
+                }, 500);
+            }
+        }
     }
+    
     onAction() {
         // Check if any menu or panel is visible
         if (window.menu) {
@@ -97,6 +127,7 @@ export class Game {
                 break;
         }
     }
+    
     startGame() {
         // Only start if we're not already playing and the menu is not visible
         if (this.state != this.STATES.PLAYING && (!window.menu || !window.menu.isVisible)) {
@@ -105,6 +136,7 @@ export class Game {
             this.addBlock();
         }
     }
+    
     restartGame() {
         this.updateState(this.STATES.RESETTING);
         let oldBlocks = this.placedBlocks.children;
@@ -136,10 +168,23 @@ export class Game {
             this.startGame();
         }, cameraMoveSpeed * 1000);
     }
+    
     placeBlock() {
         let currentBlock = this.blocks[this.blocks.length - 1];
         let newBlocks = currentBlock.place();
         this.newBlocks.remove(currentBlock.mesh);
+        
+        // Add audio feedback for block placement
+        if (window.audioManager) {
+            if (newBlocks.bonus) {
+                // Play perfect placement sound for bonus (perfect alignment)
+                window.audioManager.playPerfectPlacementSound();
+            } else if (newBlocks.placed) {
+                // Play normal placement sound
+                window.audioManager.playBlockPlacedSound();
+            }
+        }
+        
         if (newBlocks.placed)
             this.placedBlocks.add(newBlocks.placed);
         if (newBlocks.chopped) {
@@ -171,6 +216,7 @@ export class Game {
         }
         this.addBlock();
     }
+    
     addBlock() {
         let lastBlock = this.blocks[this.blocks.length - 1];
         if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) {
@@ -184,6 +230,7 @@ export class Game {
         if (this.blocks.length >= 5)
             this.instructions.classList.add('hide');
     }
+    
     endGame() {
         this.updateState(this.STATES.ENDED);
         
@@ -204,6 +251,7 @@ export class Game {
             }, 1000);
         }
     }
+    
     tick() {
         this.blocks[this.blocks.length - 1].tick();
         this.stage.render();
