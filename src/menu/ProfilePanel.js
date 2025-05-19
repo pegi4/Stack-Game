@@ -1,5 +1,6 @@
 import { getProfile, updateProfile, uploadAvatar, deleteAvatar, updatePassword, signOut } from '../db/auth';
 import { getCurrentUser as getGlobalUser } from '../utils/globalUser';
+import { fetchUserScores } from '../db/scores';
 
 export class ProfilePanel {
   constructor(container, onBack) {
@@ -79,8 +80,18 @@ export class ProfilePanel {
     }
   }
   
-  renderProfileContent() {
+  async renderProfileContent() {
     if (!this.profile) return;
+    
+    // Load user's high scores
+    const user = getGlobalUser();
+    let userScores;
+    try {
+      userScores = await fetchUserScores({ userId: user.id, limit: 5 });
+    } catch (error) {
+      console.error('Error fetching user scores:', error);
+      userScores = [];
+    }
     
     const content = this.panel.querySelector('.profile-content');
     content.innerHTML = `
@@ -98,11 +109,27 @@ export class ProfilePanel {
         </div>
       </div>
 
-      <div class="profile-section profile-actions">
-        <button class="logout-btn">Logout</button>
-      </div>
-      
       <div class="profile-section">
+        <h3>Your High Scores</h3>
+        <div class="scores-container">
+          ${userScores.length > 0 ? `
+            <div class="scores-list">
+              ${userScores.map((score, index) => `
+                <div class="score-row">
+                  <span class="score-rank">#${index + 1}</span>
+                  <span class="score-value">${score.score}</span>
+                  <span class="score-date">${new Date(score.created_at).toLocaleDateString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <p class="no-scores">No scores yet. Play the game to set some records!</p>
+          `}
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3>Profile Settings</h3>
         <div class="form-group">
           <label for="username">Username</label>
           <input type="text" id="username" value="${this.profile.username || ''}" />
@@ -121,6 +148,10 @@ export class ProfilePanel {
           <input type="password" id="confirm-password" />
         </div>
         <button class="update-password-btn">Update Password</button>
+      </div>
+
+      <div class="profile-section profile-actions">
+        <button class="logout-btn">Logout</button>
       </div>
     `;
     
@@ -326,4 +357,4 @@ export class ProfilePanel {
   hide() {
     this.panel.style.display = 'none';
   }
-} 
+}

@@ -56,6 +56,7 @@ export class LeaderboardPanel {
         const username = score.profiles?.username || 'Unknown Player';
         const avatar = score.profiles?.avatar_url || null;
         
+        // Highlight top 3 players, showing other 7 players too
         html += `
           <div class="leaderboard-row${index < 3 ? ' top-' + (index + 1) : ''}">
             <div class="rank">${index + 1}</div>
