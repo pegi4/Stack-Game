@@ -27,3 +27,7 @@ export async function testConnection() {
         return false
     }
 }
+
+if (typeof window !== 'undefined') {
+  window.supabase = supabase;
+}
