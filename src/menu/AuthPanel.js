@@ -1,5 +1,7 @@
+// src/menu/AuthPanel.js - CORRECTED VERSION
 import './menu.css';
 import { signIn, signUp } from '../db/auth';
+import audioManager from '../audio/AudioManager';
 
 export class AuthPanel {
   constructor(container, onBack) {
@@ -39,6 +41,8 @@ export class AuthPanel {
     backButton.title = 'Back to menu';
     backButton.addEventListener('click', () => {
       if (!this.isLoading) {
+        // Play click sound
+        audioManager.playSoundEffect('menuClick');
         this.onBack();
       }
     });
@@ -79,6 +83,9 @@ export class AuthPanel {
     if (mode === this.currentMode || this.isLoading) return;
     
     this.currentMode = mode;
+    
+    // Play click sound
+    audioManager.playSoundEffect('menuClick');
     
     // Clear form area
     if (this.formContainer) {
@@ -302,6 +309,9 @@ export class AuthPanel {
     if (!email || !password) {
       this.showError('Please enter both email and password');
       this.shakeForm();
+      
+      // Play error sound
+      audioManager.playSoundEffect('blockMiss');
       return;
     }
     
@@ -313,6 +323,9 @@ export class AuthPanel {
       
       this.showSuccess('Login successful!');
       
+      // Play success sound
+      audioManager.playSoundEffect('blockPerfect');
+      
       // Add success animation and delay before returning to menu
       this.formContainer.classList.add('auth-success');
       
@@ -323,6 +336,9 @@ export class AuthPanel {
     } catch (error) {
       this.showError(error.message || 'Login failed. Please try again.');
       this.shakeForm();
+      
+      // Play error sound
+      audioManager.playSoundEffect('blockMiss');
     } finally {
       this.setLoading(false);
     }
@@ -334,12 +350,18 @@ export class AuthPanel {
     if (!username || !email || !password) {
       this.showError('Please fill in all fields');
       this.shakeForm();
+      
+      // Play error sound
+      audioManager.playSoundEffect('blockMiss');
       return;
     }
     
     if (password.length < 6) {
       this.showError('Password must be at least 6 characters');
       this.shakeForm();
+      
+      // Play error sound
+      audioManager.playSoundEffect('blockMiss');
       return;
     }
     
@@ -350,6 +372,9 @@ export class AuthPanel {
       await signUp({ email, password, username });
       
       this.showSuccess('Registration successful! Please check your email to confirm your account.');
+      
+      // Play success sound
+      audioManager.playSoundEffect('blockPerfect');
       
       // Add success animation
       this.formContainer.classList.add('auth-success');
@@ -363,6 +388,9 @@ export class AuthPanel {
     } catch (error) {
       this.showError(error.message || 'Registration failed. Please try again.');
       this.shakeForm();
+      
+      // Play error sound
+      audioManager.playSoundEffect('blockMiss');
     } finally {
       this.setLoading(false);
     }
@@ -438,10 +466,13 @@ export class AuthPanel {
     this.panelContainer.style.display = 'flex';
     this.clearMessages();
     this.setLoading(false);
+    
+    // Play menu sound when panel is shown
+    audioManager.playSoundEffect('menuClick');
   }
   
   hide() {
     this.isVisible = false;
     this.panelContainer.style.display = 'none';
   }
-} 
+}

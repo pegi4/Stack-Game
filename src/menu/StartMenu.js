@@ -1,3 +1,4 @@
+// src/menu/StartMenu.js
 import './menu.css';
 import { InstructionsPanel } from './InstructionsPanel';
 import { ShopPanel } from './ShopPanel';
@@ -6,6 +7,7 @@ import { ProfilePanel } from './ProfilePanel';
 import { SettingsPanel } from './SettingsPanel';
 import { AuthPanel } from './AuthPanel';
 import { getCurrentUser } from '../utils/globalUser';
+import audioManager from '../audio/AudioManager'; // Add this import
 
 export class StartMenu {
   constructor(game) {
@@ -37,6 +39,9 @@ export class StartMenu {
     this.profilePanel = new ProfilePanel(this.container, () => this.showMenu());
     this.settingsPanel = new SettingsPanel(this.container, () => this.showMenu());
     this.authPanel = new AuthPanel(this.container, () => this.showMenu());
+    
+    // Start menu music when created
+    audioManager.playMusic('menu');
   }
 
   createMenuOptions() {
@@ -67,6 +72,10 @@ export class StartMenu {
     option.className = 'menu-option';
     option.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent event from bubbling to game
+      
+      // Play menu click sound
+      audioManager.playSoundEffect('menuClick');
+      
       onClick();
     });
     this.menuContainer.appendChild(option);
@@ -79,6 +88,11 @@ export class StartMenu {
   startGame() {
     this.isVisible = false;
     this.hideMenu();
+    
+    // Play the start game sound - the actual game music
+    // will be triggered in the game's updateState method
+    audioManager.playSoundEffect('gameStart');
+    
     setTimeout(() => {
       this.game.startGame();
     }, 500);
@@ -120,6 +134,9 @@ export class StartMenu {
     this.createMenuOptions();
     this.menuContainer.style.display = 'flex';
     
+    // Make sure menu music is playing when menu is shown
+    audioManager.playMusic('menu');
+    
     // Hide all panels
     this.instructionsPanel.hide();
     this.shopPanel.hide();
@@ -132,4 +149,4 @@ export class StartMenu {
   hideMenu() {
     this.menuContainer.style.display = 'none';
   }
-} 
+}

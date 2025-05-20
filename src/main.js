@@ -5,6 +5,7 @@ import { StartMenu } from './menu';
 import { supabase } from './utils/supabase';
 import { setCurrentUser } from './utils/globalUser';
 import './db/scores';
+import { initAudio } from './audio'; // Import the audio initialization
 
 async function initializeAuth() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -34,6 +35,10 @@ initializeAuth();
 // Test Supabase connection and initialize game
 async function initApp() {
     try {
+        // Initialize audio system
+        await initAudio();
+        console.log('Audio system initialized');
+        
         const isConnected = await testConnection()
         if (isConnected) {
             console.log('Ready to use Supabase!')

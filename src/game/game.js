@@ -4,6 +4,8 @@ import { Stage } from './stage';
 import { Block } from './block';
 import { getCurrentUser } from '../utils/globalUser';
 import { saveScore } from '../db/scores';
+import audioManager from '../audio/AudioManager';
+
 
 export class Game {
     constructor() {
@@ -68,6 +70,15 @@ export class Game {
             this.mainContainer.classList.remove(this.STATES[key]);
         this.mainContainer.classList.add(newState);
         this.state = newState;
+  
+        // Play audio based on state changes
+        if (newState === this.STATES.READY) {
+            // When the game first loads or is ready to play
+            audioManager.playMusic('menu');
+        } else if (newState === this.STATES.PLAYING) {
+            // When gameplay starts
+            audioManager.playMusic('game');
+    }
     }
     onAction() {
         // Check if any menu or panel is visible
@@ -103,8 +114,11 @@ export class Game {
             this.scoreContainer.innerHTML = '0';
             this.updateState(this.STATES.PLAYING);
             this.addBlock();
-        }
-    }
+    
+            // Play game start sound
+            audioManager.playSoundEffect('gameStart');
+  }
+}
     restartGame() {
         this.updateState(this.STATES.RESETTING);
         let oldBlocks = this.placedBlocks.children;
@@ -140,33 +154,43 @@ export class Game {
         let currentBlock = this.blocks[this.blocks.length - 1];
         let newBlocks = currentBlock.place();
         this.newBlocks.remove(currentBlock.mesh);
+  
+        // Play appropriate sound based on placement result
+        if (newBlocks.bonus) {
+            // Perfect placement
+            audioManager.playSoundEffect('blockPerfect');
+        } else if (newBlocks.placed) {
+            // Regular placement
+            audioManager.playSoundEffect('blockPlace');
+        }
+  
         if (newBlocks.placed)
             this.placedBlocks.add(newBlocks.placed);
         if (newBlocks.chopped) {
             this.choppedBlocks.add(newBlocks.chopped);
             let positionParams = {
-                duration: 1,
-                y: '-=30',
-                ease: "power1.easeIn",
-                onComplete: () => this.choppedBlocks.remove(newBlocks.chopped)
+            duration: 1,
+            y: '-=30',
+            ease: "power1.easeIn",
+            onComplete: () => this.choppedBlocks.remove(newBlocks.chopped)
             };
             let rotateRandomness = 10;
             let rotationParams = {
-                delay: 0.05,
-                x: newBlocks.plane == 'z' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
-                z: newBlocks.plane == 'x' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
-                y: Math.random() * 0.1,
+            delay: 0.05,
+            x: newBlocks.plane == 'z' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
+            z: newBlocks.plane == 'x' ? ((Math.random() * rotateRandomness) - (rotateRandomness / 2)) : 0.1,
+            y: Math.random() * 0.1,
             };
             if (newBlocks.chopped.position[newBlocks.plane] > newBlocks.placed.position[newBlocks.plane]) {
-                positionParams[newBlocks.plane] = '+=' + (40 * Math.abs(newBlocks.direction));
+            positionParams[newBlocks.plane] = '+=' + (40 * Math.abs(newBlocks.direction));
             }
             else {
-                positionParams[newBlocks.plane] = '-=' + (40 * Math.abs(newBlocks.direction));
+            positionParams[newBlocks.plane] = '-=' + (40 * Math.abs(newBlocks.direction));
             }
             gsap.to(newBlocks.chopped.position, positionParams);
             gsap.to(newBlocks.chopped.rotation, {
-                duration: 1,
-                ...rotationParams
+            duration: 1,
+            ...rotationParams
             });
         }
         this.addBlock();
@@ -186,21 +210,29 @@ export class Game {
     }
     endGame() {
         this.updateState(this.STATES.ENDED);
-        
+  
+        // Play game over sound
+        audioManager.playSoundEffect('gameOver');
+  
+        // Switch back to menu music after a delay
+        setTimeout(() => {
+            audioManager.playMusic('menu');
+        }, 2000);
+  
         // Save score if user is logged in
         const user = getCurrentUser();
         const finalScore = parseInt(this.scoreContainer.innerHTML);
-        
+  
         if (user && finalScore > 0) {
             saveScore({ userId: user.id, score: finalScore })
-                .then(() => console.log('Score saved successfully'))
-                .catch(error => console.error('Error saving score:', error));
+            .then(() => console.log('Score saved successfully'))
+            .catch(error => console.error('Error saving score:', error));
         }
-        
+  
         // Show the menu when the game ends
         if (window.menu) {
             setTimeout(() => {
-                window.menu.showMenu();
+            window.menu.showMenu();
             }, 1000);
         }
     }
