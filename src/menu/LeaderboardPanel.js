@@ -1,4 +1,5 @@
 import { fetchLeaderboard } from '../db/scores.js';
+import audioManager from '../audio/AudioManager';
 
 export class LeaderboardPanel {
   constructor(container, onBack) {
@@ -19,6 +20,10 @@ export class LeaderboardPanel {
     const backButton = this.panel.querySelector('.back-button');
     backButton.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent event from bubbling to game
+      
+      // Play menu click sound
+      audioManager.playSoundEffect('menuClick');
+      
       onBack();
     });
 
@@ -71,6 +76,9 @@ export class LeaderboardPanel {
 
       html += '</div>';
       this.contentContainer.innerHTML = html;
+      
+      // Play a sound when scores are loaded
+      audioManager.playSoundEffect('menuClick');
 
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -80,6 +88,10 @@ export class LeaderboardPanel {
 
   show() { 
     this.panel.classList.add('visible');
+    
+    // Play menu click sound when panel is shown
+    audioManager.playSoundEffect('menuClick');
+    
     // Refresh scores when panel is shown
     this.loadScores();
   }
@@ -87,4 +99,4 @@ export class LeaderboardPanel {
   hide() { 
     this.panel.classList.remove('visible'); 
   }
-} 
+}

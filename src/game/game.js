@@ -4,6 +4,7 @@ import { Stage } from './stage';
 import { Block } from './block';
 import { getCurrentUser } from '../utils/globalUser';
 import { saveScore } from '../db/scores';
+import audioManager from '../audio/AudioManager';
 
 export class Game {
     constructor() {
@@ -12,10 +13,12 @@ export class Game {
             'PLAYING': 'playing',
             'READY': 'ready',
             'ENDED': 'ended',
-            'RESETTING': 'resetting'
+            'RESETTING': 'resetting',
+            'PAUSED': 'paused' // Add a new paused state for tab switching
         };
         this.blocks = [];
         this.state = this.STATES.LOADING;
+        this.previousState = null; // Track previous state for resuming after tab switch
         this.stage = new Stage();
         this.mainContainer = document.getElementById('container');
         this.scoreContainer = document.getElementById('score');
@@ -28,9 +31,80 @@ export class Game {
         this.stage.add(this.newBlocks);
         this.stage.add(this.placedBlocks);
         this.stage.add(this.choppedBlocks);
+        
+        // Create end game buttons container
+        this.endGameButtonsContainer = document.createElement('div');
+        this.endGameButtonsContainer.className = 'end-game-buttons';
+        this.endGameButtonsContainer.style.display = 'none';
+        this.mainContainer.appendChild(this.endGameButtonsContainer);
+        
+        // Create Play Again button
+        this.playAgainButton = document.createElement('button');
+        this.playAgainButton.textContent = 'Play Again';
+        this.playAgainButton.className = 'end-game-button';
+        this.playAgainButton.addEventListener('click', () => {
+            audioManager.playSoundEffect('menuClick');
+            this.restartGame();
+        });
+        this.endGameButtonsContainer.appendChild(this.playAgainButton);
+        
+        // Create Back to Menu button
+        this.backToMenuButton = document.createElement('button');
+        this.backToMenuButton.textContent = 'Back to Menu';
+        this.backToMenuButton.className = 'end-game-button';
+        this.backToMenuButton.addEventListener('click', () => {
+            audioManager.playSoundEffect('menuClick');
+            if (window.menu) {
+                this.cleanupGame();
+                window.menu.showMenu();
+            }
+        });
+        this.endGameButtonsContainer.appendChild(this.backToMenuButton);
+        
+        // Add some CSS for the buttons
+        const style = document.createElement('style');
+        style.textContent = `
+            .end-game-buttons {
+                position: absolute;
+                bottom: 30%;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                z-index: 100;
+            }
+            .end-game-button {
+                padding: 12px 20px;
+                background-color: #333344;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-family: "Comfortaa", cursive;
+            }
+            .end-game-button:hover {
+                background-color: #444455;
+                transform: scale(1.05);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Track if we're in a tab switch to prevent menu showing
+        this.inTabSwitch = false;
+        
+        // Set up flag to prevent menu from showing after tab switch
+        window.preventMenuAfterTabSwitch = false;
+        
+        // Add the visibility change listener to handle tab switching
+        this.handleVisibilityChangeBound = this.handleVisibilityChange.bind(this);
+        document.addEventListener('visibilitychange', this.handleVisibilityChangeBound);
+        
         this.addBlock();
         this.tick();
         this.updateState(this.STATES.READY);
+        
         document.addEventListener('keydown', e => {
             if (e.keyCode == 32)
                 this.onAction();
@@ -55,20 +129,94 @@ export class Game {
                 this.onAction();
             }
         });
-        
-        document.addEventListener('touchstart', e => {
-            e.preventDefault();
-            // this.onAction();
-            // this triggers after click on android so you
-            // insta-lose, will figure it out later.
-        });
     }
+    
+    // Handle tab switching
+    handleVisibilityChange() {
+        console.log("Visibility changed. Hidden:", document.hidden);
+        
+        if (document.hidden) {
+            // Tab is hidden, pause the game if it was playing
+            if (this.state === this.STATES.PLAYING) {
+                console.log("GAME WAS PLAYING, PAUSING");
+                this.inTabSwitch = true;
+                window.preventMenuAfterTabSwitch = true; // Set global flag
+                this.pauseGame();
+            }
+        } else {
+            // Tab is visible again, resume the game if it was paused
+            if (this.state === this.STATES.PAUSED && this.previousState === this.STATES.PLAYING && this.inTabSwitch) {
+                console.log("GAME WAS PAUSED, RESUMING");
+                
+                // Ensure the menu is hidden if it somehow became visible
+                if (window.menu && window.menu.isVisible) {
+                    console.log("FORCING MENU TO HIDE");
+                    window.menu.hideMenu();
+                }
+                
+                // Resume with a slight delay to ensure the DOM is ready
+                setTimeout(() => {
+                    this.resumeGame();
+                    this.inTabSwitch = false;
+                    
+                    // Clear the global flag after a short delay
+                    setTimeout(() => {
+                        window.preventMenuAfterTabSwitch = false;
+                    }, 500);
+                }, 100);
+            }
+        }
+    }
+    
+    pauseGame() {
+        console.log('Pausing game');
+        this.previousState = this.state;
+        this.updateState(this.STATES.PAUSED);
+    }
+    
+    resumeGame() {
+        console.log('Resuming game');
+        
+        if (this.previousState === this.STATES.PLAYING) {
+            this.updateState(this.STATES.PLAYING);
+        } else {
+            // If we don't know the previous state, go to ready
+            this.updateState(this.STATES.READY);
+        }
+    }
+    
     updateState(newState) {
+        console.log(`Game state changing from ${this.state} to ${newState}`);
+        
         for (let key in this.STATES)
             this.mainContainer.classList.remove(this.STATES[key]);
         this.mainContainer.classList.add(newState);
-        this.state = newState;
+        
+        // Store the previous state before changing to new state
+        if (this.state !== newState) {
+            this.previousState = this.state;
+            this.state = newState;
+        }
+        
+        // Play audio based on state changes
+        if (newState === this.STATES.READY) {
+            // When the game first loads or is ready to play
+            audioManager.playMusic('menu');
+        } else if (newState === this.STATES.PLAYING) {
+            // When gameplay starts
+            audioManager.playMusic('game');
+        } else if (newState === this.STATES.ENDED) {
+            // Show end game buttons when game ends
+            this.endGameButtonsContainer.style.display = 'flex';
+            
+            // Switch back to menu music after a delay
+            setTimeout(() => {
+                audioManager.playMusic('menu');
+            }, 2000);
+        }
+        // Don't change the audio when pausing/resuming - just keep current audio state
     }
+    
     onAction() {
         // Check if any menu or panel is visible
         if (window.menu) {
@@ -95,17 +243,29 @@ export class Game {
             case this.STATES.ENDED:
                 this.restartGame();
                 break;
+            case this.STATES.PAUSED:
+                // Resume if paused
+                this.resumeGame();
+                break;
         }
     }
+    
     startGame() {
         // Only start if we're not already playing and the menu is not visible
         if (this.state != this.STATES.PLAYING && (!window.menu || !window.menu.isVisible)) {
             this.scoreContainer.innerHTML = '0';
             this.updateState(this.STATES.PLAYING);
             this.addBlock();
+            
+            // Play game start sound
+            audioManager.playSoundEffect('gameStart');
         }
     }
+    
     restartGame() {
+        // Hide end game buttons
+        this.endGameButtonsContainer.style.display = 'none';
+        
         this.updateState(this.STATES.RESETTING);
         let oldBlocks = this.placedBlocks.children;
         let removeSpeed = 0.2;
@@ -136,10 +296,21 @@ export class Game {
             this.startGame();
         }, cameraMoveSpeed * 1000);
     }
+    
     placeBlock() {
         let currentBlock = this.blocks[this.blocks.length - 1];
         let newBlocks = currentBlock.place();
         this.newBlocks.remove(currentBlock.mesh);
+        
+        // Play appropriate sound based on placement result
+        if (newBlocks.bonus) {
+            // Perfect placement
+            audioManager.playSoundEffect('blockPerfect');
+        } else if (newBlocks.placed) {
+            // Regular placement
+            audioManager.playSoundEffect('blockPlace');
+        }
+        
         if (newBlocks.placed)
             this.placedBlocks.add(newBlocks.placed);
         if (newBlocks.chopped) {
@@ -171,6 +342,7 @@ export class Game {
         }
         this.addBlock();
     }
+    
     addBlock() {
         let lastBlock = this.blocks[this.blocks.length - 1];
         if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) {
@@ -184,8 +356,12 @@ export class Game {
         if (this.blocks.length >= 5)
             this.instructions.classList.add('hide');
     }
+    
     endGame() {
         this.updateState(this.STATES.ENDED);
+        
+        // Play game over sound
+        audioManager.playSoundEffect('gameOver');
         
         // Save score if user is logged in
         const user = getCurrentUser();
@@ -196,17 +372,58 @@ export class Game {
                 .then(() => console.log('Score saved successfully'))
                 .catch(error => console.error('Error saving score:', error));
         }
-        
-        // Show the menu when the game ends
-        if (window.menu) {
-            setTimeout(() => {
-                window.menu.showMenu();
-            }, 1000);
-        }
     }
+    
+    // Add a new method to clean up the game when going back to menu
+    cleanupGame() {
+        // Hide end game buttons
+        this.endGameButtonsContainer.style.display = 'none';
+        
+        // Clear all blocks
+        while(this.placedBlocks.children.length > 0) {
+            this.placedBlocks.remove(this.placedBlocks.children[0]);
+        }
+        
+        while(this.choppedBlocks.children.length > 0) {
+            this.choppedBlocks.remove(this.choppedBlocks.children[0]);
+        }
+        
+        while(this.newBlocks.children.length > 0) {
+            this.newBlocks.remove(this.newBlocks.children[0]);
+        }
+        
+        // Reset game state
+        this.blocks = [];
+        this.state = this.STATES.READY;
+        this.previousState = null;
+        this.inTabSwitch = false;
+        this.scoreContainer.innerHTML = '0';
+        
+        // Add the first block back
+        this.addBlock();
+    }
+    
     tick() {
-        this.blocks[this.blocks.length - 1].tick();
+        // Only update blocks if the game is actively playing
+        if (this.state === this.STATES.PLAYING) {
+            try {
+                this.blocks[this.blocks.length - 1].tick();
+            } catch (e) {
+                console.error("Error in tick:", e);
+                // Don't let the game crash if there's an error
+            }
+        }
+        
+        // Always render the scene
         this.stage.render();
+        
+        // Continue the animation loop
         requestAnimationFrame(() => { this.tick(); });
+    }
+    
+    // Clean up event listeners when game is destroyed
+    destroy() {
+        document.removeEventListener('visibilitychange', this.handleVisibilityChangeBound);
+        // Additional cleanup if needed
     }
 }

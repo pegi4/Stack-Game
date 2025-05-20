@@ -1,4 +1,6 @@
 // src/menu/InstructionsPanel.js
+import audioManager from '../audio/AudioManager';
+
 export class InstructionsPanel {
   constructor(container, onBack) {
     this.panel = document.createElement('div');
@@ -19,9 +21,22 @@ export class InstructionsPanel {
     const backButton = this.panel.querySelector('.back-button');
     backButton.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent event from bubbling to game
+      
+      // Play menu click sound
+      audioManager.playSoundEffect('menuClick');
+      
       onBack();
     });
   }
-  show() { this.panel.classList.add('visible'); }
-  hide() { this.panel.classList.remove('visible'); }
-} 
+  
+  show() { 
+    this.panel.classList.add('visible');
+    
+    // Play menu click sound when panel is shown
+    audioManager.playSoundEffect('menuClick');
+  }
+  
+  hide() { 
+    this.panel.classList.remove('visible'); 
+  }
+}

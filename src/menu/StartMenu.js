@@ -6,12 +6,14 @@ import { ProfilePanel } from './ProfilePanel';
 import { SettingsPanel } from './SettingsPanel';
 import { AuthPanel } from './AuthPanel';
 import { getCurrentUser } from '../utils/globalUser';
+import audioManager from '../audio/AudioManager';
 
 export class StartMenu {
   constructor(game) {
     this.game = game;
     this.isVisible = true;
     this.container = document.getElementById('container');
+    this.activePanel = null; // Track which panel is currently active
 
     // Create menu container
     this.menuContainer = document.createElement('div');
@@ -37,6 +39,38 @@ export class StartMenu {
     this.profilePanel = new ProfilePanel(this.container, () => this.showMenu());
     this.settingsPanel = new SettingsPanel(this.container, () => this.showMenu());
     this.authPanel = new AuthPanel(this.container, () => this.showMenu());
+    
+    // Initialize audio context with first user interaction
+    this.menuContainer.addEventListener('click', () => {
+      // This ensures audio context is activated on first user interaction
+      if (audioManager.audioContext.state === 'suspended') {
+        audioManager.audioContext.resume().then(() => {
+          console.log('AudioContext resumed by user interaction');
+          // Start menu music once audio context is active
+          audioManager.playMusic('menu');
+        });
+      }
+    }, { once: true });
+    
+    // Start menu music when created (this might not work until user interaction)
+    setTimeout(() => {
+      audioManager.playMusic('menu');
+    }, 500);
+    
+    // Add a visibility change handler to explicitly prevent menu from showing after tab switch
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        console.log("Tab visible again, checking if we should prevent menu");
+        if (window.preventMenuAfterTabSwitch) {
+          console.log("PREVENTING MENU AFTER TAB SWITCH");
+          // Hide menu if it somehow became visible
+          this.hideMenu();
+          
+          // Make sure panels stay visible if one was active
+          this.restoreState();
+        }
+      }
+    });
   }
 
   createMenuOptions() {
@@ -67,6 +101,10 @@ export class StartMenu {
     option.className = 'menu-option';
     option.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent event from bubbling to game
+      
+      // Play menu click sound
+      audioManager.playSoundEffect('menuClick');
+      
       onClick();
     });
     this.menuContainer.appendChild(option);
@@ -79,46 +117,81 @@ export class StartMenu {
   startGame() {
     this.isVisible = false;
     this.hideMenu();
-    setTimeout(() => {
-      this.game.startGame();
-    }, 500);
+    this.activePanel = null; // Reset active panel
+    
+    // Make sure audio context is running before starting the game
+    if (audioManager.audioContext.state === 'suspended') {
+      audioManager.audioContext.resume();
+    }
+    
+    // Play the start game sound
+    audioManager.playSoundEffect('gameStart');
+    
+    // Start the game if it exists
+    if (this.game) {
+      setTimeout(() => {
+        // Don't call game.startGame() if the game is already in PLAYING or PAUSED states
+        if (this.game.state !== this.game.STATES.PLAYING && 
+            this.game.state !== this.game.STATES.PAUSED) {
+          this.game.startGame();
+        }
+      }, 500);
+    }
   }
 
   showInstructions() {
     this.hideMenu();
+    this.activePanel = 'instructions';
     this.instructionsPanel.show();
   }
 
   showShop() {
     this.hideMenu();
+    this.activePanel = 'shop';
     this.shopPanel.show();
   }
 
   showLeaderboard() {
     this.hideMenu();
+    this.activePanel = 'leaderboard';
     this.leaderboardPanel.show();
   }
 
   showProfile() {
     this.hideMenu();
+    this.activePanel = 'profile';
     this.profilePanel.show();
   }
 
   showSettings() {
     this.hideMenu();
+    this.activePanel = 'settings';
     this.settingsPanel.show();
   }
   
   showAuth() {
     this.hideMenu();
+    this.activePanel = 'auth';
     this.authPanel.show();
   }
 
   showMenu() {
+    // Skip showing menu if we're in a tab switch from gameplay
+    if (window.preventMenuAfterTabSwitch) {
+      console.log("SKIPPING MENU SHOW DUE TO TAB SWITCH");
+      return;
+    }
+    
     this.isVisible = true;
+    this.activePanel = null;
+    
     // Refresh menu options in case auth state changed
     this.createMenuOptions();
     this.menuContainer.style.display = 'flex';
+    
+    // Make sure menu music is playing when menu is shown
+    // The audioManager will check if it's already playing this track
+    audioManager.playMusic('menu');
     
     // Hide all panels
     this.instructionsPanel.hide();
@@ -130,6 +203,39 @@ export class StartMenu {
   }
 
   hideMenu() {
+    this.isVisible = false;
     this.menuContainer.style.display = 'none';
   }
-} 
+  
+  // Method to restore the correct panel after tab switch
+  restoreState() {
+    console.log("Restoring state, active panel:", this.activePanel);
+    
+    // If a panel was active, make sure it stays visible
+    if (this.activePanel) {
+      switch (this.activePanel) {
+        case 'instructions':
+          this.instructionsPanel.show();
+          break;
+        case 'shop':
+          this.shopPanel.show();
+          break;
+        case 'leaderboard':
+          this.leaderboardPanel.show();
+          break;
+        case 'profile':
+          this.profilePanel.show();
+          break;
+        case 'settings':
+          this.settingsPanel.show();
+          break;
+        case 'auth':
+          this.authPanel.show();
+          break;
+      }
+    } else if (this.isVisible && !window.preventMenuAfterTabSwitch) {
+      // Only show menu if it was visible and we're not preventing it
+      this.menuContainer.style.display = 'flex';
+    }
+  }
+}

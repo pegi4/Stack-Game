@@ -32,11 +32,18 @@ export class Block {
         }
         // state
         this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED;
-        // set direction
-        this.speed = -0.1 - (this.index * 0.005);
-        if (this.speed < -4)
-            this.speed = -4;
+        
+        // SPEED MODIFICATION: Increase the base speed and the increment per level
+        // Original: this.speed = -0.1 - (this.index * 0.005);
+        this.speed = -0.25 - (this.index * 0.01); // Much faster base speed and faster increment per level
+        
+        // Adjust the maximum speed limit (make it faster)
+        // Original: if (this.speed < -4) this.speed = -4;
+        if (this.speed < -8) // Double the maximum speed
+            this.speed = -8;
+            
         this.direction = this.speed;
+        
         // create block
         let geometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
         geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
