@@ -44,12 +44,26 @@ class AudioManager {
     
     // Load settings from localStorage
     this.loadSettings();
+    
+    // Handle page visibility changes to prevent music restarting when switching tabs
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Page is hidden (user switched tabs)
+        console.log('Page hidden, audio context suspended');
+        this.audioContext.suspend();
+      } else {
+        // Page is visible again
+        console.log('Page visible, audio context resumed');
+        this.audioContext.resume();
+      }
+    });
   }
   
   loadMusic() {
     // Load menu music
     this.loadAudio('Menu.wav').then(buffer => {
       this.menuMusic = buffer;
+      console.log('Menu music loaded');
     }).catch(error => {
       console.error('Failed to load menu music:', error);
     });
@@ -57,6 +71,7 @@ class AudioManager {
     // Load game music
     this.loadAudio('Game.wav').then(buffer => {
       this.gameMusic = buffer;
+      console.log('Game music loaded');
     }).catch(error => {
       console.error('Failed to load game music:', error);
     });
@@ -90,6 +105,12 @@ class AudioManager {
     // Skip if music is disabled
     if (!this.musicEnabled) return;
     
+    // Check if the same track is already playing to avoid restarting it
+    if (this.currentMusic && this.currentMusic.track === track) {
+      console.log(`${track} music already playing, not restarting`);
+      return; // Already playing this track, do nothing
+    }
+    
     // Stop current music if playing
     this.stopMusic();
     
@@ -103,9 +124,12 @@ class AudioManager {
     
     // If buffer is not loaded yet, try again in 500ms
     if (!buffer) {
+      console.log(`Buffer for ${track} music not loaded yet, retrying in 500ms`);
       setTimeout(() => this.playMusic(track), 500);
       return;
     }
+    
+    console.log(`Playing ${track} music`);
     
     // Create source
     const source = this.audioContext.createBufferSource();
@@ -122,15 +146,19 @@ class AudioManager {
     // Loop music
     source.loop = true;
     
-    // Play
-    source.start(0);
-    
-    // Store reference to current music
-    this.currentMusic = {
-      source,
-      gainNode,
-      track
-    };
+    try {
+      // Play
+      source.start(0);
+      
+      // Store reference to current music
+      this.currentMusic = {
+        source,
+        gainNode,
+        track
+      };
+    } catch (e) {
+      console.error('Error starting music:', e);
+    }
   }
   
   stopMusic() {
@@ -168,16 +196,16 @@ class AudioManager {
     // Configure sound based on type
     switch (type) {
       case 'blockPlace':
-        // Mid tone for regular placement
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+        // Simple, clean click sound for block placement
+        oscillator.type = 'square'; // Square wave for sharp attack
+        oscillator.frequency.setValueAtTime(2000, this.audioContext.currentTime); // Start with high frequency
         oscillator.frequency.exponentialRampToValueAtTime(
-          220, this.audioContext.currentTime + 0.2
+          800, this.audioContext.currentTime + 0.03 // Very quick drop for crisp click
         );
-        gainNode.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(this.sfxVolume * 0.5, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.05); // Short duration
         oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.3);
+        oscillator.stop(this.audioContext.currentTime + 0.05); // Very short sound
         break;
         
       case 'blockPerfect':
