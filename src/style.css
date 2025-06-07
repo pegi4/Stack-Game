@@ -1,13 +1,14 @@
-@import url("https://fonts.googleapis.com/css?family=Comfortaa");
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css?family=Comfortaa');
+@import 'tailwindcss';
 
-html, body {
+html,
+body {
   margin: 0;
   overflow: hidden;
   height: 100%;
   width: 100%;
   position: relative;
-  font-family: "Comfortaa", cursive;
+  font-family: 'Comfortaa', cursive;
 }
 
 #container {
@@ -86,7 +87,8 @@ html, body {
 #container #instructions.hide {
   opacity: 0 !important;
 }
-#container.playing #score, #container.resetting #score {
+#container.playing #score,
+#container.resetting #score {
   transform: translatey(0px) scale(1);
 }
 #container.playing #instructions {
@@ -105,4 +107,88 @@ html, body {
 }
 #container.ended .game-over p {
   transition-delay: 0.3s;
+}
+
+.multiplier-display {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  z-index: 1000;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.score-display-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 10px;
+  color: white;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+}
+
+.current-score {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.multiplier-display {
+  font-size: 20px;
+  color: #ffd700;
+}
+
+.perfect-text {
+  position: fixed;
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+  animation: float-up 1.5s ease-out forwards;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
+.game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 100;
+  display: none;
+}
+
+.game-overlay.visible {
+  display: block;
 }
