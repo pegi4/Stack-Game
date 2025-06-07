@@ -62,15 +62,14 @@ export class Game {
       this.restartGame()
     })
     this.endGameButtonsContainer.appendChild(this.playAgainButton)
-
-    // Create Menu button
     this.menuButton = document.createElement('button')
     this.menuButton.textContent = 'Menu'
     this.menuButton.className = 'end-game-button'
     this.menuButton.addEventListener('click', () => {
+      audioManager.playSoundEffect('menuClick')
       this.cleanupGame()
       if (window.menu) {
-        window.menu.show()
+        window.menu.showMenu()
       }
     })
     this.endGameButtonsContainer.appendChild(this.menuButton)
