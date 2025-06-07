@@ -274,11 +274,6 @@ export class Game {
       }
     }
 
-    // Don't handle actions if multiplier display is visible
-    if (this.multiplierContainer.style.display === 'block') {
-      return
-    }
-
     // Don't handle actions if auth panel is visible
     const authPanel = document.querySelector('.auth-panel')
     if (authPanel && authPanel.style.display === 'flex') {
@@ -290,6 +285,7 @@ export class Game {
         this.startGame()
         break
       case this.STATES.PLAYING:
+        // Always allow clicks in playing state
         this.placeBlock()
         break
       case this.STATES.ENDED:
@@ -387,6 +383,11 @@ export class Game {
 
       // Create perfect text effect
       this.createPerfectText()
+
+      // Hide multiplier display after animation
+      setTimeout(() => {
+        this.multiplierContainer.style.display = 'none'
+      }, 1000) // Hide after 1 second
     } else {
       // Reset multiplier and perfect placements on non-perfect placement
       this.perfectPlacements = 0
