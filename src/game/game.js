@@ -491,7 +491,6 @@ export class Game {
         .catch((error) => console.error('Error saving score:', error))
     }
   }
-
   // Add a new method to clean up the game when going back to menu
   cleanupGame() {
     // Hide end game buttons
@@ -510,11 +509,17 @@ export class Game {
       this.newBlocks.remove(this.newBlocks.children[0])
     }
 
-    // Reset game state
+    // Reset game state and score properly
     this.blocks = []
     this.state = this.STATES.READY
     this.previousState = null
     this.inTabSwitch = false
+    
+    // Reset all score-related variables
+    this.perfectPlacements = 0
+    this.multiplier = 1
+    this.score = 0
+    this.multiplierContainer.style.display = 'none'
     this.scoreContainer.innerHTML = '0'
 
     // Add the first block back

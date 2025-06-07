@@ -30,15 +30,11 @@ export class Block {
       this.color = new THREE.Color(r / 255, g / 255, b / 255)
     }
     // state
-    this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED
+    this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED    // SPEED MODIFICATION: Faster initial speed and more gradual increase
+    this.speed = -0.12 - this.index * 0.004
 
-    // SPEED MODIFICATION: Much slower initial speed and more gradual increase
-    // Original: this.speed = -0.15 - (this.index * 0.005);
-    this.speed = -0.08 - this.index * 0.003
-
-    // Adjust the maximum speed limit (make it slower)
-    // Original: if (this.speed < -4) this.speed = -4;
-    if (this.speed < -3) this.speed = -3
+    // Adjust the maximum speed limit (make it faster)
+    if (this.speed < -3.5) this.speed = -3.5
 
     this.direction = this.speed
 
@@ -64,16 +60,14 @@ export class Block {
     let blocksToReturn = {
       plane: this.workingPlane,
       direction: this.direction,
-    }
-
-    // Add near-perfect placement adjustment
-    const NEAR_PERFECT_THRESHOLD = 0.5 // 0.5 units (5 pixels) threshold for near-perfect
+    }    // Add near-perfect placement adjustment (made more strict)
+    const NEAR_PERFECT_THRESHOLD = 0.2 // 0.2 units threshold for near-perfect (reduced from 0.5)
     const distanceFromPerfect = Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane])
 
-    // Calculate coverage percentage
+    // Calculate coverage percentage (made more strict)
     const coveragePercentage = (overlap / this.dimension[this.workingDimension]) * 100
 
-    if (distanceFromPerfect <= NEAR_PERFECT_THRESHOLD || coveragePercentage >= 80) {
+    if (distanceFromPerfect <= NEAR_PERFECT_THRESHOLD || coveragePercentage >= 90) {
       // Adjust position to be perfect
       this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane]
       overlap = this.dimension[this.workingDimension]
